@@ -173,11 +173,11 @@ module Pfab
     end
 
     def container_repository
-      @_container_repository ||= @config["container.repository"]
+      @_container_repository ||= config["container.repository"]
     end
 
     def config
-      @config ||= YAML.load(File.read(File.join(Dir.home, ".pfab.yaml")))
+      @_config ||= YAML.load(File.read(File.join(Dir.home, ".pfab.yaml")))
     end
 
     def puts_and_system cmd
