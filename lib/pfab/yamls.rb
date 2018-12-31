@@ -1,7 +1,7 @@
 require 'pry'
 module Pfab
   class Yamls
-    def self.generate_for(apps:, application_yaml:, image_name:, env:, sha:, container_repository:)
+    def self.generate_for(apps:, application_yaml:, image_name:, env:, sha:, config:)
 
       apps.each do |app, props|
         puts app
@@ -10,7 +10,8 @@ module Pfab
           "env" => env.to_s,
           'image_name' => image_name,
           'sha' => sha,
-          'container_repository' => container_repository,
+          'container_repository' => config["container.repository"],
+          'config' => config,
           'props' => props,
           'deployed_name' => app,
           'application' => application_yaml["name"],
@@ -23,6 +24,8 @@ module Pfab
             processed = Pfab::Templates::Web.new(data).write_to(f)
           when "job" then
             processed = Pfab::Templates::Job.new(data).write_to(f)
+          when "daemon" then
+            processed = Pfab::Templates::Daemon.new(data).write_to(f)
           end
         end
       end

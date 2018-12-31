@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Jeff Dwyer".freeze]
-  s.date = "2018-12-29"
+  s.date = "2018-12-31"
   s.description = "k8s helper".freeze
   s.email = "jdwyer@prefab.cloud".freeze
   s.executables = ["pfab".freeze]
@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
     "lib/pfab.rb",
     "lib/pfab/cli.rb",
     "lib/pfab/templates/base.rb",
+    "lib/pfab/templates/daemon.rb",
     "lib/pfab/templates/job.rb",
     "lib/pfab/templates/web.rb",
     "lib/pfab/yamls.rb",

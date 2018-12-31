@@ -122,9 +122,27 @@ module Pfab
     end
 
     def cmd_build(force: false)
-
       rev = get_current_sha
       say "This repo is at rev: #{rev}"
+      uncommitted_changes = `git diff-index HEAD --`.empty?
+      if uncommitted_changes
+        say "FYI! There are uncommitted changes."
+        say "carrying on and pushing local code to #{rev}"
+      end
+
+      prebuild = @application_yaml["prebuild"]
+      if prebuild.empty?
+        say "No prebuild task"
+      else
+        say "Prebuild, running system(#{prebuild})"
+        result = system(prebuild)
+        if result
+          notify_ok 'Pfab prebuild success'
+        else
+          say "Pfab prebuild did not return success. Exiting"
+          return false
+        end
+      end
 
       full_image_name = "#{container_repository}/#{image_name}:#{rev}"
 
@@ -154,7 +172,7 @@ module Pfab
                                        env: $env,
                                        sha: get_current_sha,
                                        image_name: image_name,
-                                       container_repository: container_repository
+                                       config: config
       )
       puts "Generated #{wrote}"
     end
