@@ -57,7 +57,7 @@ module Pfab
                       path: "/",
                       backend: {
                         serviceName: @data['deployed_name'],
-                        servicePort: "http",
+                        servicePort: get("service_port") || "http",
                       },
                     },
                   ],
@@ -124,16 +124,7 @@ module Pfab
                     name: @data['deployed_name'],
                     command: get("command").split(" "),
                     env: env_vars,
-                    resources: {
-                      requests: {
-                        cpu: @data["cpu"] || "50m",
-                        memory: @data["memory"] || "256Mi",
-                      },
-                      limits: {
-                        cpu: @data["cpu"] || "250m",
-                        memory: @data["memory"] || "256Mi",
-                      },
-                    },
+                    resources: resources,
                     livenessProbe: {
                       httpGet: {
                         path: get("health_check_path") || "/",

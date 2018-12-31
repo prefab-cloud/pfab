@@ -14,7 +14,33 @@ module Pfab
       end
 
       def get(key)
-        app_vars[@data["env"]][key] || app_vars[key]
+        app_vars.dig(@data["env"], key) || app_vars[key]
+      end
+
+
+      def cpu(req_type)
+        default_cpu_string = @data["config"]["default_cpu_string"] || "50m/250m"
+        (request, limit) = (get("cpu") || default_cpu_string).split("/")
+        req_type == :limit ? limit : request
+      end
+
+      def memory(req_type)
+        default_memory_string = @data["config"]["default_memory_string"] || "256Mi/500Mi"
+        (request, limit) = (get("memory") || default_memory_string).split("/")
+        req_type == :limit ? limit : request
+      end
+
+      def resources
+        {
+          requests: {
+            cpu: cpu(:request),
+            memory: memory(:request),
+          },
+          limits: {
+            cpu: cpu(:limit),
+            memory: memory(:limit),
+          }
+        }
       end
 
       def env_vars

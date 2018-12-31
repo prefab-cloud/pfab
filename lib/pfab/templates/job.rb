@@ -36,16 +36,7 @@ module Pfab
                     name: @data['deployed_name'],
                     command: app_vars["command"].split(" "),
                     env: env_vars,
-                    resources: {
-                      requests: {
-                        cpu: @data["cpu"] || "50m",
-                        memory: @data["memory"] || "256Mi",
-                      },
-                      limits: {
-                        cpu: @data["cpu"] || "250m",
-                        memory: @data["memory"] || "256Mi",
-                      },
-                    },
+                    resources: resources,
                   },
                 ],
                 restartPolicy: "Never",
