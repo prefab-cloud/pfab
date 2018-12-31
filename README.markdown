@@ -7,6 +7,8 @@ nothing to see here
 set ~/.pfab.yaml
 ```
 container.repository: "gcr.io/$$$$$$$"
+default_cpu_string: "50m/250m"
+default_memory_string: "256Mi/500Mi"
 envs: 
   staging:
     context: "k8s-staging-context"
