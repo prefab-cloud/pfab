@@ -56,9 +56,11 @@ module Pfab
         c.syntax = "pfab shipit"
         c.summary = "build, generate, apply"
         c.action do
-          cmd_build
-          cmd_generate_yaml
-          cmd_apply
+          success = cmd_build
+          if success
+            cmd_generate_yaml
+            cmd_apply
+          end
         end
       end
 
@@ -127,7 +129,12 @@ module Pfab
       uncommitted_changes = `git diff-index HEAD --`.empty?
       if uncommitted_changes
         say "FYI! There are uncommitted changes."
-        say "carrying on and pushing local code to #{rev}"
+        continue = agree("Continue anyway?")
+        if continue
+          say "carrying on and pushing local code to #{rev}"
+        else
+          return false
+        end
       end
 
       prebuild = @application_yaml["prebuild"]
@@ -137,7 +144,7 @@ module Pfab
         say "Prebuild, running system(#{prebuild})"
         result = system(prebuild)
         if result
-          notify_ok 'Pfab prebuild success'
+          say 'Pfab prebuild success'
         else
           say "Pfab prebuild did not return success. Exiting"
           return false
