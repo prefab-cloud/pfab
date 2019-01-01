@@ -3,7 +3,7 @@ module Pfab
   class Yamls
     def self.generate_for(apps:, application_yaml:, image_name:, env:, sha:, config:)
 
-      apps.each do |app, props|
+      apps.map do |app, props|
         puts app
 
         data = {
@@ -18,7 +18,8 @@ module Pfab
           'application_yaml' => application_yaml
         }
 
-        File.open(".application-k8s-#{env}-#{app}.yaml", "w") do |f|
+        filename = ".application-k8s-#{env}-#{app}.yaml"
+        File.open(filename, "w") do |f|
           case props[:deployable_type]
           when "web" then
             processed = Pfab::Templates::Web.new(data).write_to(f)
@@ -28,6 +29,7 @@ module Pfab
             processed = Pfab::Templates::Daemon.new(data).write_to(f)
           end
         end
+        filename
       end
 
     end
