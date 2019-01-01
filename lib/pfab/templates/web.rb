@@ -80,6 +80,24 @@ module Pfab
         }
       end
 
+      def default_probe
+        {
+          httpGet: {
+            path: get("health_check_path") || "/",
+            port: get("port"),
+          },
+          initialDelaySeconds: 5,
+        }
+      end
+
+      def livenessProbe
+        get("livenessProbe") || default_probe
+      end
+
+      def readinessProbe
+        get("readinessProbe") || default_probe
+      end
+
       def deployment
         {
           kind: "Deployment",
@@ -125,20 +143,8 @@ module Pfab
                     command: get("command").split(" "),
                     env: env_vars,
                     resources: resources,
-                    livenessProbe: {
-                      httpGet: {
-                        path: get("health_check_path") || "/",
-                        port: get("port"),
-                      },
-                      initialDelaySeconds: 5,
-                    },
-                    readinessProbe: {
-                      httpGet: {
-                        path: get("health_check_path") || "/",
-                        port: get("port"),
-                      },
-                      initialDelaySeconds: 5,
-                    },
+                    livenessProbe: livenessProbe,
+                    readinessProbe: readinessProbe,
                   }
                 ]
               },
