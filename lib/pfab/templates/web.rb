@@ -27,7 +27,7 @@ module Pfab
               {
                 name: "http",
                 port: 80,
-                targetPort: 3000,
+                targetPort: get("port"),
               }
             ]
           }
@@ -57,7 +57,7 @@ module Pfab
                       path: "/",
                       backend: {
                         serviceName: @data['deployed_name'],
-                        servicePort: get("service_port") || "http",
+                        servicePort: "http",
                       },
                     },
                   ],
@@ -69,15 +69,17 @@ module Pfab
       end
 
       def ingress_annotations
-        {
+        h = {
           "kubernetes.io/ingress.class" => "traefik",
           "traefik.frontend.passHostHeader" => "false",
           "traefik.frontend.priority" => "1",
           "traefik.frontend.entryPoints" => "https",
-          "traefik.protocol" => "http",
+          "traefik.protocol" => get("protocol") || "http",
           "traefik.frontend.headers.SSLRedirect" => "true",
           "traefik.docker.network" => "traefik",
         }
+        h["ingress.kubernetes.io/protocol"] = "h2c" if get("protocol") == "h2c"
+        h
       end
 
       def default_probe
