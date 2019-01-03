@@ -88,7 +88,7 @@ module Pfab
             path: get("health_check_path") || "/",
             port: get("port"),
           },
-          initialDelaySeconds: 5,
+          initialDelaySeconds: 15,
         }
       end
 

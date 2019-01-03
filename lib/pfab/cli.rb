@@ -121,7 +121,7 @@ module Pfab
       set_kube_context
       app_name = get_app_name
       puts_and_system("kubectl apply -f .application-k8s-#{$env}-#{app_name}.yaml")
-      puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d")} HEAD")
+      puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
     end
 
     def cmd_build(force: false)
@@ -151,7 +151,7 @@ module Pfab
 
       say "No image #{full_image_name} present, building"
 
-      prebuild = @application_yaml["prebuild"]
+      prebuild = @application_yaml["prebuild"] || ""
       if prebuild.empty?
         say "No prebuild task"
       else
