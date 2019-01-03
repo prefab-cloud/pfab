@@ -121,6 +121,7 @@ module Pfab
       set_kube_context
       app_name = get_app_name
       puts_and_system("kubectl apply -f .application-k8s-#{$env}-#{app_name}.yaml")
+      puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d")} HEAD")
     end
 
     def cmd_build(force: false)
@@ -137,6 +138,19 @@ module Pfab
         end
       end
 
+      full_image_name = "#{container_repository}/#{image_name}:#{rev}"
+
+      cmd = "docker images -q #{full_image_name}"
+      say "Looking for images with #{cmd}"
+      existing = `#{cmd}`
+
+      if !existing.to_s.empty? && !force
+        say "Found image #{full_image_name} already, skipping prebuild, build & push"
+        return true
+      end
+
+      say "No image #{full_image_name} present, building"
+
       prebuild = @application_yaml["prebuild"]
       if prebuild.empty?
         say "No prebuild task"
@@ -151,26 +165,13 @@ module Pfab
         end
       end
 
-      full_image_name = "#{container_repository}/#{image_name}:#{rev}"
-
-      cmd = "docker images -q #{full_image_name}"
-      say "Looking for images with #{cmd}"
-      existing = `#{cmd}`
-
-      if !existing.to_s.empty? && !force
-        say "Found image #{full_image_name} already, skipping build & push"
-        return
-      end
-
-      say "No image #{full_image_name} present, building"
-
       puts_and_system "docker build -t #{image_name} ."
 
       puts_and_system "docker tag #{image_name}:latest #{image_name}:#{rev}"
       puts_and_system "docker tag #{image_name}:#{rev} #{full_image_name}"
 
       puts_and_system "docker push #{container_repository}/#{image_name}:#{rev}"
-
+      return true
     end
 
     def cmd_generate_yaml

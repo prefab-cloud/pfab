@@ -46,9 +46,14 @@ module Pfab
       def env_vars
 
         env_vars = [
-          { name: "DEPLOYED_NAME", value: @data['deployed_name'] }
+          { name: "DEPLOYED_NAME", value: @data['deployed_name'] },
+          { name: "DOGSTATSD_HOST_IP",
+            valueFrom: {
+              fieldRef: { fieldPath: "status.hostIP" }
+            }
+          },
         ]
-
+        
         load_env_vars(env_vars, @data["application_yaml"][:environment])
         load_env_vars(env_vars, @data["application_yaml"][@data["env"]][:environment])
 
