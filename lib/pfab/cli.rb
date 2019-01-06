@@ -82,6 +82,24 @@ module Pfab
         end
       end
 
+      command :exec do |c|
+        c.syntax = "pfab exec"
+        c.summary = "kubectl exec into a  pod"
+        c.description = "CLI to the Cloud"
+        c.example "exec into the first pod in staging",
+                  "pfab exec"
+        c.example "exec into the first pod in production",
+                  "ezp -p exec"
+        c.action do
+          set_kube_context
+          app_name = get_app_name
+
+          first_pod = get_first_pod app_name
+
+          puts_and_system "kubectl exec -it #{first_pod} -- /bin/bash"
+        end
+      end
+
       command :status do |c|
         c.syntax = "pfab status"
         c.summary = "status of an app"
