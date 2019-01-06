@@ -27,6 +27,8 @@ module Pfab
             processed = Pfab::Templates::Job.new(data).write_to(f)
           when "daemon" then
             processed = Pfab::Templates::Daemon.new(data).write_to(f)
+          when "cron" then
+            processed = Pfab::Templates::Cron.new(data).write_to(f)
           end
         end
         filename
