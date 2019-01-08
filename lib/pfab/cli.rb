@@ -18,8 +18,9 @@ module Pfab
       else
         raise "I need to be run in a directory with a application.yaml"
       end
-
       global_option("--verbose") { $verbose = true }
+      $dryrun = false
+      global_option("--dryrun") { $dryrun = true }
       $env = :staging
       global_option("-p") { $env = :production }
       global_option("-a", "--application_name APP_NAME", "run without prompting for app") do |app_name|
@@ -56,6 +57,8 @@ module Pfab
         c.syntax = "pfab shipit"
         c.summary = "build, generate, apply"
         c.action do
+          app_name = get_app_name(all: true)
+          puts "Shipping #{app_name}"
           success = cmd_build
           if success
             cmd_generate_yaml
@@ -137,9 +140,10 @@ module Pfab
 
     def cmd_apply
       set_kube_context
-      app_name = get_app_name
-      puts_and_system("kubectl apply -f .application-k8s-#{$env}-#{app_name}.yaml")
-      puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
+      get_apps.each do |app_name|
+        puts_and_system("kubectl apply -f .application-k8s-#{$env}-#{app_name}.yaml")
+        puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
+      end
     end
 
     def cmd_build(force: false)
@@ -226,7 +230,11 @@ module Pfab
 
     def puts_and_system cmd
       puts cmd
-      system cmd
+      if $dryrun
+        puts "dry run, didn't run that"
+      else
+        system cmd
+      end
     end
 
     def apps
@@ -263,9 +271,16 @@ module Pfab
       JSON.parse(pods_str)
     end
 
-    def get_app_name
+    def get_app_name(all: false)
       return $app_name unless $app_name.nil?
-      choose("which app?", *@apps.keys)
+      apps = @apps.keys
+      apps << "all" if all
+      $app_name = choose("which app?", *apps)
+    end
+
+    def get_apps
+      name = get_app_name(all: true)
+      (name == "all") ? @apps.keys : [name]
     end
   end
 end
