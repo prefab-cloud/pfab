@@ -49,11 +49,11 @@ module Pfab
           { name: "DEPLOYED_NAME", value: @data['deployed_name'] },
         ]
 
-        load_env_vars(env_vars, @data["application_yaml"][:environment])
-        load_env_vars(env_vars, @data["application_yaml"][@data["env"]][:environment])
+        load_env_vars(env_vars, @data.dig("application_yaml", :environment))
+        load_env_vars(env_vars, @data.dig("application_yaml", @data["env"], :environment))
 
-        load_secrets(env_vars, @data["application_yaml"][:env_secrets])
-        load_secrets(env_vars, @data["application_yaml"][@data["env"]][:env_secrets])
+        load_secrets(env_vars, @data.dig("application_yaml", :env_secrets))
+        load_secrets(env_vars, @data.dig("application_yaml", @data["env"], :env_secrets))
 
         env_vars
       end

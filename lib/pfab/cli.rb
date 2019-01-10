@@ -133,6 +133,29 @@ module Pfab
         end
       end
 
+      command :run_local do |c|
+        c.syntax = "pfab run_local"
+        c.summary = "run an app LOCALLY"
+        c.description = "run the application command with all env vars set"
+        c.example "run a command locally",
+                  "pfab run_local"
+        c.option "-c", "--command COMMAND", "Run a command with the ENV vars of the selected app"
+        c.action do |_args, options|
+          $env = :development
+          app_name = get_app_name
+          puts "RUNNING THE FOLLOWING LOCALLY"
+
+          env_vars = yy.env_vars(app_name).
+            reject { |v| v.has_key? :valueFrom }
+
+          env_var_string = env_vars.map { |item| "#{item[:name]}=#{item[:value]}" }.join(" ")
+          options.default command: @apps[app_name][:command]
+
+          puts_and_system "#{env_var_string} #{options.command}"
+        end
+      end
+      alias_command :rl, :run_local
+
       default_command :help
 
       run!
@@ -196,14 +219,18 @@ module Pfab
       return true
     end
 
-    def cmd_generate_yaml
-      wrote = Pfab::Yamls.generate_for(apps: @apps,
-                                       application_yaml: @application_yaml,
-                                       env: $env,
-                                       sha: get_current_sha,
-                                       image_name: image_name,
-                                       config: config
+    def yy
+      Pfab::Yamls.new(apps: @apps,
+                      application_yaml: @application_yaml,
+                      env: $env,
+                      sha: get_current_sha,
+                      image_name: image_name,
+                      config: config
       )
+    end
+
+    def cmd_generate_yaml
+      wrote = yy.generate_all
       puts "Generated #{wrote}"
     end
 

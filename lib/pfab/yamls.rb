@@ -1,24 +1,39 @@
 require 'pry'
 module Pfab
   class Yamls
-    def self.generate_for(apps:, application_yaml:, image_name:, env:, sha:, config:)
 
-      apps.map do |app, props|
-        puts app
+    def initialize(apps:, application_yaml:, image_name:, env:, sha:, config:)
+      @apps = apps
+      @base_data = {
+        "env" => env.to_s,
+        'image_name' => image_name,
+        'sha' => sha,
+        'container_repository' => config["container.repository"],
+        'config' => config,
+        'application' => application_yaml["name"],
+        'application_yaml' => application_yaml
+      }
+    end
 
-        data = {
-          "env" => env.to_s,
-          'image_name' => image_name,
-          'sha' => sha,
-          'container_repository' => config["container.repository"],
-          'config' => config,
-          'props' => props,
-          'deployed_name' => app,
-          'application' => application_yaml["name"],
-          'application_yaml' => application_yaml
-        }
+    def env_vars(app)
+      template = Pfab::Templates::Base.new(data_for(app, @apps[app]))
+      template.env_vars
+    end
 
-        filename = ".application-k8s-#{env}-#{app}.yaml"
+    def data_for(app, props)
+      data = @base_data.clone
+      data['props'] = props
+      data['deployed_name'] = app
+      data
+    end
+
+    def generate_all
+
+      @apps.map do |app, props|
+
+        data = data_for(app, props)
+
+        filename = ".application-k8s-#{data["env"]}-#{app}.yaml"
         File.open(filename, "w") do |f|
           case props[:deployable_type]
           when "web" then
