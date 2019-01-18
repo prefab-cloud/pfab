@@ -89,6 +89,7 @@ module Pfab
             port: get("port"),
           },
           initialDelaySeconds: 15,
+          timeoutSeconds: 3
         }
       end
 
