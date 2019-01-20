@@ -60,7 +60,7 @@ module Pfab
 
       def load_env_vars(env_vars, hash)
         (hash || {}).each do |env_var_name, v|
-          if v.start_with? "field/"
+          if v.to_s.start_with? "field/"
             (_, field_name) = v.split("/")
             env_vars << { name: env_var_name, valueFrom: {
               fieldRef: { fieldPath: field_name }
