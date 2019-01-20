@@ -172,7 +172,7 @@ module Pfab
     def cmd_build(force: false)
       rev = get_current_sha
       say "This repo is at rev: #{rev}"
-      uncommitted_changes = `git diff-index HEAD --`.empty?
+      uncommitted_changes = !`git diff-index HEAD --`.empty?
       if uncommitted_changes
         say "FYI! There are uncommitted changes."
         continue = agree("Continue anyway?")
