@@ -48,24 +48,29 @@ module Pfab
             annotations: ingress_annotations,
           },
           spec: {
-            rules: [
-              {
-                host: get("host"),
-                http: {
-                  paths: [
-                    {
-                      path: "/",
-                      backend: {
-                        serviceName: @data['deployed_name'],
-                        servicePort: "http",
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
+            rules: rules,
           },
         }
+      end
+
+      def rules
+        hosts = get("host").split(",")
+        hosts.map do |host|
+          {
+            host: host,
+            http: {
+              paths: [
+                {
+                  path: "/",
+                  backend: {
+                    serviceName: @data['deployed_name'],
+                    servicePort: "http",
+                  },
+                },
+              ],
+            },
+          }
+        end
       end
 
       def ingress_annotations
