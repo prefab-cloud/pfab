@@ -1,3 +1,4 @@
+require "pfab/version"
 require "pfab/cli"
 require "pfab/yamls"
 require "pfab/templates/base"

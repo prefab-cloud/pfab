@@ -10,7 +10,7 @@ module Pfab
 
     def run
       program :name, "pfab"
-      program :version, "0.0.0"
+      program :version,Pfab::Version::STRING
       program :description, "k8s helper"
 
       if File.exist? "application.yaml"

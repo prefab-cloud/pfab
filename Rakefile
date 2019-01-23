@@ -11,6 +11,8 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 require 'juwelier'
+require './lib/pfab/version.rb'
+
 Juwelier::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
   gem.name = "pfab"
@@ -20,7 +22,7 @@ Juwelier::Tasks.new do |gem|
   gem.description = %Q{k8s helper}
   gem.email = "jdwyer@prefab.cloud"
   gem.authors = ["Jeff Dwyer"]
-
+  gem.version = Pfab::Version::STRING
   # dependencies defined in Gemfile
 end
 Juwelier::RubygemsDotOrgTasks.new
