@@ -10,7 +10,7 @@ module Pfab
 
     def run
       program :name, "pfab"
-      program :version,Pfab::Version::STRING
+      program :version, Pfab::Version::STRING
       program :description, "k8s helper"
 
       if File.exist? "application.yaml"
@@ -156,10 +156,32 @@ module Pfab
       end
       alias_command :rl, :run_local
 
+      command :clean do |c|
+        c.syntax = "pfab clean"
+        c.summary = "clean up pods"
+        c.description = "clean up old pods"
+        c.example "clean up",
+                  "pfab clean"
+        c.action do |_args, options|
+          set_kube_context
+          puts "THIS APPLIES TO THE ENTIRE NAMESPACE"
+          types = %w(Failed Pending Succeeded)
+          types.each do |type|
+            system("kubectl get pods --field-selector status.phase=#{type}")
+            if agree("Delete those?")
+              `kubectl delete pods --field-selector status.phase=#{type}`
+              puts "Deleted"
+            end
+          end
+        end
+      end
+      alias_command :rl, :run_local
+
       default_command :help
 
       run!
     end
+
 
     def cmd_apply
       set_kube_context
