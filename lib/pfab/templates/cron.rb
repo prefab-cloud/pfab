@@ -20,6 +20,8 @@ module Pfab
           },
           spec: {
             schedule: get("schedule"),
+            successfulJobsHistoryLimit: 1,
+            failedJobsHistoryLimit: 1,
             jobTemplate: {
               metadata: {
                 name: "#{@data['deployed_name']}-#{@data['sha']}",
