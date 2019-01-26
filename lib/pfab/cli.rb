@@ -186,6 +186,11 @@ module Pfab
     def cmd_apply
       set_kube_context
       get_apps.each do |app_name|
+        app = @apps[app_name]
+        if app[:deployable_type] == "cron"
+          deployed_name = deployed_name(app)
+          puts_and_system("kubectl delete cronjob -l deployed-name=#{deployed_name}")
+        end
         puts_and_system("kubectl apply -f .application-k8s-#{$env}-#{app_name}.yaml")
         puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
       end
@@ -254,6 +259,10 @@ module Pfab
     def cmd_generate_yaml
       wrote = yy.generate_all
       puts "Generated #{wrote}"
+    end
+
+    def deployed_name(app)
+      [app[:application], app[:deployable_type], app[:deployable]].join("-")
     end
 
     def get_current_sha
