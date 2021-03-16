@@ -12,7 +12,7 @@ gem "pry-byebug"
 group :development do
   gem "rdoc", "~> 3.12"
   gem "bundler", "~> 1.0"
-  gem "juwelier", "~> 2.1.0"
+  gem "juwelier", "~> 2.4.9"
   gem "simplecov", ">= 0"
   gem "test-unit", ">= 0"
 end

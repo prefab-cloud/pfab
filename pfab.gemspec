@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib".freeze]
   s.authors = ["Jeff Dwyer".freeze]
-  s.date = "2019-01-26"
+  s.date = "2021-03-16"
   s.description = "k8s helper".freeze
   s.email = "jdwyer@prefab.cloud".freeze
   s.executables = ["pfab".freeze]
@@ -55,7 +55,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<pry-byebug>.freeze, [">= 0"])
       s.add_development_dependency(%q<rdoc>.freeze, ["~> 3.12"])
       s.add_development_dependency(%q<bundler>.freeze, ["~> 1.0"])
-      s.add_development_dependency(%q<juwelier>.freeze, ["~> 2.1.0"])
+      s.add_development_dependency(%q<juwelier>.freeze, ["~> 2.4.9"])
       s.add_development_dependency(%q<simplecov>.freeze, [">= 0"])
       s.add_development_dependency(%q<test-unit>.freeze, [">= 0"])
     else
@@ -64,7 +64,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<pry-byebug>.freeze, [">= 0"])
       s.add_dependency(%q<rdoc>.freeze, ["~> 3.12"])
       s.add_dependency(%q<bundler>.freeze, ["~> 1.0"])
-      s.add_dependency(%q<juwelier>.freeze, ["~> 2.1.0"])
+      s.add_dependency(%q<juwelier>.freeze, ["~> 2.4.9"])
       s.add_dependency(%q<simplecov>.freeze, [">= 0"])
       s.add_dependency(%q<test-unit>.freeze, [">= 0"])
     end
@@ -74,7 +74,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<pry-byebug>.freeze, [">= 0"])
     s.add_dependency(%q<rdoc>.freeze, ["~> 3.12"])
     s.add_dependency(%q<bundler>.freeze, ["~> 1.0"])
-    s.add_dependency(%q<juwelier>.freeze, ["~> 2.1.0"])
+    s.add_dependency(%q<juwelier>.freeze, ["~> 2.4.9"])
     s.add_dependency(%q<simplecov>.freeze, [">= 0"])
     s.add_dependency(%q<test-unit>.freeze, [">= 0"])
   end
