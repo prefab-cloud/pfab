@@ -128,7 +128,7 @@ module Pfab
           elsif $verbose
             puts_and_system "kubectl describe pods -l #{selector}"
           else
-            puts_and_system "kubectl get ingresses,jobs,services,cronjobs,deployments,pods --include-uninitialized=true -l #{selector}"
+            puts_and_system "kubectl get ingresses,jobs,services,cronjobs,deployments,pods -l #{selector}"
           end
         end
       end
