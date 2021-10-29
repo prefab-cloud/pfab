@@ -8,7 +8,7 @@ module Pfab
       def deployment
         {
           kind: "Deployment",
-          apiVersion: "extensions/v1beta1",
+          apiVersion: "apps/v1",
           metadata: {
             name: @data['deployed_name'],
             namespace: @data['env'],
