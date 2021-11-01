@@ -17,7 +17,6 @@ module Pfab
         app_vars.dig(@data["env"], key) || app_vars[key]
       end
 
-
       def cpu(req_type)
         default_cpu_string = @data["config"]["default_cpu_string"] || "50m/250m"
         (request, limit) = (get("cpu") || default_cpu_string).split("/")
@@ -44,44 +43,44 @@ module Pfab
       end
 
       def env_vars
+        env_vars = { "DEPLOYED_NAME": { value: @data['deployed_name'] } }
 
-        env_vars = [
-          { name: "DEPLOYED_NAME", value: @data['deployed_name'] },
-        ]
-
+        # load defaults
         load_env_vars(env_vars, @data.dig("application_yaml", :environment))
-        load_env_vars(env_vars, @data.dig("application_yaml", @data["env"], :environment))
-
         load_secrets(env_vars, @data.dig("application_yaml", :env_secrets))
+
+        # load env overrides
+        load_env_vars(env_vars, @data.dig("application_yaml", @data["env"], :environment))
         load_secrets(env_vars, @data.dig("application_yaml", @data["env"], :env_secrets))
 
-        env_vars
+        env_vars.map do |k, v|
+          { name: k }.merge(v)
+        end
       end
 
       def load_env_vars(env_vars, hash)
         (hash || {}).each do |env_var_name, v|
           if v.to_s.start_with? "field/"
             (_, field_name) = v.split("/")
-            env_vars << { name: env_var_name, valueFrom: {
+            env_vars[env_var_name] = { valueFrom: {
               fieldRef: { fieldPath: field_name }
             } }
           else
-            env_vars << { name: env_var_name, value: v }
+            env_vars[env_var_name] = { value: v }
           end
-
         end
       end
 
       def load_secrets(env_vars, hash)
         (hash || {}).each do |env_var_name, v|
           (ref, key) = v.split("/")
-          env_vars << { name: env_var_name,
-                        valueFrom: {
-                          secretKeyRef: {
-                            name: ref,
-                            key: key
-                          }
-                        } }
+          env_vars[env_var_name] = {
+            valueFrom: {
+              secretKeyRef: {
+                name: ref,
+                key: key
+              }
+            } }
         end
       end
     end
