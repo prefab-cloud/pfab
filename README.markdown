@@ -100,6 +100,13 @@ Contributing to pfab
     is fine, but please isolate to its own commit so I can cherry-pick
     around it.
 
+Releasing
+-----------------------------------------
+
+- modify version.rb
+- ```rake gemspec:release```
+- ```rake gemcutter:release```
+
 Copyright
 ---------
 

@@ -148,7 +148,7 @@ module Pfab
           env_vars = yy.env_vars(app_name).
             reject { |v| v.has_key? :valueFrom }
 
-          env_var_string = env_vars.map { |item| "#{item[:name]}=#{item[:value]}" }.join(" ")
+          env_var_string = env_vars.map { |item| "#{item[:name]}=\"#{item[:value]}\"" }.join(" ")
           options.default command: @apps[app_name][:command]
 
           puts_and_system "#{env_var_string} #{options.command}"
