@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     ".ruby-version",
+    ".tool-versions",
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
