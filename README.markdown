@@ -114,8 +114,10 @@ Releasing
 -----------------------------------------
 
 - modify version.rb
-- ```rake gemspec:release```
-- ```rake gemcutter:release```
+- ```bundle exec rake gemspec```
+- ```bundle exec rake git:release```
+- ```bundle exec rake build```
+- ```gem push pkg/pfab-0.12.0.gem```
 
 Copyright
 ---------
