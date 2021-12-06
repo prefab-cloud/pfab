@@ -62,9 +62,14 @@ module Pfab
               paths: [
                 {
                   path: "/",
+                  pathType: "Prefix",
                   backend: {
-                    serviceName: @data['deployed_name'],
-                    servicePort: "http",
+                    service: {
+                      name: @data['deployed_name'],
+                      port: {
+                        name: "http"
+                      }
+                    }
                   },
                 },
               ],
