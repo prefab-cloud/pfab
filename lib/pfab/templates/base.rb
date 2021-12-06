@@ -43,7 +43,7 @@ module Pfab
       end
 
       def env_vars
-        env_vars = { "DEPLOYED_NAME": { value: @data['deployed_name'] } }
+        env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] } }
 
         # load defaults
         load_env_vars(env_vars, @data.dig("application_yaml", :environment))

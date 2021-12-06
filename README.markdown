@@ -100,6 +100,16 @@ Contributing to pfab
     is fine, but please isolate to its own commit so I can cherry-pick
     around it.
 
+Local Testing
+-----------------------------------------
+```bash
+bundle exec rake build
+gem install --local pkg/pfab-0.11.0.gem
+```
+```ruby
+gem 'pfab', :path => "../pfab"
+```
+
 Releasing
 -----------------------------------------
 
