@@ -237,7 +237,7 @@ module Pfab
         end
       end
 
-      puts_and_system "docker build -t #{image_name} ."
+      puts_and_system "docker build -t #{image_name} --platform amd64 ."
 
       puts_and_system "docker tag #{image_name}:latest #{image_name}:#{rev}"
       puts_and_system "docker tag #{image_name}:#{rev} #{full_image_name}"
