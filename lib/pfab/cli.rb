@@ -27,8 +27,6 @@ module Pfab
         $app_name = app_name
       end
 
-      @apps = apps
-
       command :build do |c|
         c.syntax = "pfab build"
         c.summary = "build image"
@@ -142,14 +140,14 @@ module Pfab
         c.option "-c", "--command COMMAND", "Run a command with the ENV vars of the selected app"
         c.action do |_args, options|
           $env = :development
-          app_name = get_app_name
+          app_name = get_app_name(include_run_locals: true)
           puts "RUNNING THE FOLLOWING LOCALLY"
 
           env_vars = yy.env_vars(app_name).
             reject { |v| v.has_key? :valueFrom }
 
           env_var_string = env_vars.map { |item| "#{item[:name]}=\"#{item[:value]}\"" }.join(" ")
-          options.default command: @apps[app_name][:command]
+          options.default command: all_runnables[app_name][:command]
 
           puts_and_system "#{env_var_string} #{options.command}"
         end
@@ -182,11 +180,10 @@ module Pfab
       run!
     end
 
-
     def cmd_apply
       set_kube_context
       get_apps.each do |app_name|
-        app = @apps[app_name]
+        app = deployables[app_name]
         if app[:deployable_type] == "cron"
           deployed_name = deployed_name(app)
           puts_and_system("kubectl delete cronjob -l deployed-name=#{deployed_name}")
@@ -247,7 +244,7 @@ module Pfab
     end
 
     def yy
-      Pfab::Yamls.new(apps: @apps,
+      Pfab::Yamls.new(apps: all_runnables,
                       application_yaml: @application_yaml,
                       env: $env,
                       sha: get_current_sha,
@@ -257,7 +254,7 @@ module Pfab
     end
 
     def cmd_generate_yaml
-      wrote = yy.generate_all
+      wrote = yy.generate(deployables.keys)
       puts "Generated #{wrote}"
     end
 
@@ -295,14 +292,22 @@ module Pfab
       end
     end
 
-    def apps
-      @_apps ||= calculate_apps
+    def deployables
+      @_deployables ||= calculate_runnables("deployables")
     end
 
-    def calculate_apps
+    def run_locals
+      @_rl ||= calculate_runnables("run_locals")
+    end
+
+    def all_runnables
+      deployables.merge(run_locals)
+    end
+
+    def calculate_runnables(runnable_type)
       application = @application_yaml["name"]
       apps = {}
-      @application_yaml["deployables"].each do |deployable, dep|
+      @application_yaml[runnable_type].each do |deployable, dep|
         deployable_type = dep["type"]
         app_name = [application, deployable_type, deployable].join("-")
         apps[app_name] = {
@@ -329,16 +334,17 @@ module Pfab
       JSON.parse(pods_str)
     end
 
-    def get_app_name(all: false)
+    def get_app_name(all: false, include_run_locals: false)
       return $app_name unless $app_name.nil?
-      apps = @apps.keys
+      apps = deployables.keys
+      apps.concat(run_locals.keys) if include_run_locals
       apps << "all" if all
       $app_name = choose("which app?", *apps)
     end
 
     def get_apps
       name = get_app_name(all: true)
-      (name == "all") ? @apps.keys : [name]
+      (name == "all") ? deployables.keys : [name]
     end
   end
 end

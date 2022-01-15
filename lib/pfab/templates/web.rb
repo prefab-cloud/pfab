@@ -2,9 +2,13 @@ module Pfab
   module Templates
     class Web < Base
       def write_to(f)
-        f << YAML.dump(service.deep_stringify_keys)
-        f << YAML.dump(ingress.deep_stringify_keys)
-        f << YAML.dump(deployment.deep_stringify_keys)
+        if get("host").nil?
+          puts "No host to deploy to for #{@data['deployed_name']}. Skipping."
+        else
+          f << YAML.dump(service.deep_stringify_keys)
+          f << YAML.dump(ingress.deep_stringify_keys)
+          f << YAML.dump(deployment.deep_stringify_keys)
+        end
       end
 
       def service

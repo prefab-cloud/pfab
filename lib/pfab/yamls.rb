@@ -27,13 +27,13 @@ module Pfab
       data
     end
 
-    def generate_all
+    def generate(keys)
 
-      @apps.map do |app, props|
+      keys.each do |key|
+        props = @apps[key]
+        data = data_for(key, props)
 
-        data = data_for(app, props)
-
-        filename = ".application-k8s-#{data["env"]}-#{app}.yaml"
+        filename = ".application-k8s-#{data["env"]}-#{key}.yaml"
         File.open(filename, "w") do |f|
           case props[:deployable_type]
           when "web" then
