@@ -307,7 +307,7 @@ module Pfab
     def calculate_runnables(runnable_type)
       application = @application_yaml["name"]
       apps = {}
-      @application_yaml[runnable_type].each do |deployable, dep|
+      (@application_yaml[runnable_type] || []).each do |deployable, dep|
         deployable_type = dep["type"]
         app_name = [application, deployable_type, deployable].join("-")
         apps[app_name] = {
