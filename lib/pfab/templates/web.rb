@@ -21,7 +21,8 @@ module Pfab
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
-            }
+            },
+            annotations: service_annotations,
           },
           spec: {
             selector: {
@@ -36,6 +37,12 @@ module Pfab
             ]
           }
         }
+      end
+
+      def service_annotations
+        h = {}
+        h["traefik.ingress.kubernetes.io/service.serversscheme"] = "h2c" if get("protocol") == "h2c"
+        h
       end
 
       def ingress
@@ -107,7 +114,6 @@ module Pfab
           "traefik.ingress.kubernetes.io/router.entrypoints" => "websecure",
           "traefik.ingress.kubernetes.io/router.tls" => "true"
         }
-        h["ingress.kubernetes.io/protocol"] = "h2c" if get("protocol") == "h2c"
         h
       end
 
