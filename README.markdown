@@ -40,6 +40,7 @@ deployables:
     type: web
     port: 8443
     protocol: h2c # tell traefik this is going to be http2
+    tls_cert_secret: my-tls-secret
     command: java -Xmx550m -javaagent:/app/dd-java-agent.jar -jar myjar.jar server /app/grpc.yml
     readinessProbe:
       exec:

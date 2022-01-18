@@ -53,12 +53,25 @@ module Pfab
           },
           spec: {
             rules: rules,
+            tls: tls_hosts
           },
         }
       end
 
+      def tls_hosts
+        hosts.map do |host|
+          {
+            hosts: [host],
+            secretName: get("tls_cert_secret")
+          }
+        end
+      end
+
+      def hosts
+        get("host").split(",")
+      end
+
       def rules
-        hosts = get("host").split(",")
         hosts.map do |host|
           {
             host: host,
@@ -91,6 +104,8 @@ module Pfab
           "traefik.protocol" => get("protocol") || "http",
           "traefik.frontend.headers.SSLRedirect" => "true",
           "traefik.docker.network" => "traefik",
+          "traefik.ingress.kubernetes.io/router.entrypoints" => "websecure",
+          "traefik.ingress.kubernetes.io/router.tls" => "true"
         }
         h["ingress.kubernetes.io/protocol"] = "h2c" if get("protocol") == "h2c"
         h
