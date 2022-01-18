@@ -119,7 +119,7 @@ Releasing
 - ```git commit ```
 - ```bundle exec rake git:release```
 - ```bundle exec rake build```
-- ```gem push pkg/pfab-0.12.0.gem```
+- ```gem push pkg/pfab-0.15.0.gem```
 
 Copyright
 ---------
