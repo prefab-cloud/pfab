@@ -115,6 +115,7 @@ Releasing
 
 - modify version.rb
 - ```bundle exec rake gemspec```
+- ```git commit ```
 - ```bundle exec rake git:release```
 - ```bundle exec rake build```
 - ```gem push pkg/pfab-0.12.0.gem```
