@@ -209,11 +209,12 @@ module Pfab
 
       full_image_name = "#{container_repository}/#{image_name}:#{rev}"
 
-      cmd = "docker images -q #{full_image_name}"
+      # return 0 if image exists 1 if not
+      cmd = "docker manifest inspect #{full_image_name} > /dev/null ; echo $?"
       say "Looking for images with #{cmd}"
-      existing = `#{cmd}`
+      existing = `#{cmd}`.strip
 
-      if !existing.to_s.empty? && !force
+      if existing == "0" && !force
         say "Found image #{full_image_name} already, skipping prebuild, build & push"
         return true
       end
@@ -234,13 +235,23 @@ module Pfab
         end
       end
 
-      puts_and_system "docker build -t #{image_name} --platform amd64 ."
+      build_cmd = "docker build -t #{image_name} --platform amd64 ."
+      puts build_cmd
+      result = system(build_cmd)
 
-      puts_and_system "docker tag #{image_name}:latest #{image_name}:#{rev}"
-      puts_and_system "docker tag #{image_name}:#{rev} #{full_image_name}"
+      puts "Build Result #{result}"
 
-      puts_and_system "docker push #{container_repository}/#{image_name}:#{rev}"
-      return true
+      if result
+        puts_and_system "docker tag #{image_name}:latest #{image_name}:#{rev}"
+        puts_and_system "docker tag #{image_name}:#{rev} #{full_image_name}"
+
+        puts_and_system "docker push #{container_repository}/#{image_name}:#{rev}"
+        return true
+      else
+        say "Build Did Not Succeed"
+        return false
+      end
+
     end
 
     def yy
