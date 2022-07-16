@@ -117,8 +117,8 @@ Releasing
 - modify version.rb
 - ```bundle exec rake gemspec```
 - ```git commit ```
-- ```bundle exec rake git:release```
-- ```bundle exec rake build```
+- ```REMOTE_BRANCH=main LOCAL_BRANCH=main bundle exec rake git:release```
+- ```REMOTE_BRANCH=main LOCAL_BRANCH=main bundle exec rake build```
 - ```gem push pkg/pfab-0.15.0.gem```
 
 Copyright
