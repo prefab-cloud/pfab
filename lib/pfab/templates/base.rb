@@ -42,8 +42,17 @@ module Pfab
         }
       end
 
+
+      def deploy_id
+        "#{@data['application']}.#{application_type}.#{@data['deployed_name']}"
+      end
+
       def env_vars
-        env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] } }
+
+        env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] },
+                     "DEPLOY_ID" => { value: deploy_id },
+                     "POD_ID" => { valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } }
+        }
 
         # load defaults
         load_env_vars(env_vars, @data.dig("application_yaml", :environment))

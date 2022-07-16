@@ -5,6 +5,10 @@ module Pfab
         f << YAML.dump(deployment.deep_stringify_keys)
       end
 
+      def application_type
+        "daemon"
+      end
+
       def deployment
         {
           kind: "Deployment",
@@ -15,7 +19,8 @@ module Pfab
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
-              "application-type" => "daemon",
+              "application-type" => application_type,
+              "deploy-id" => deploy_id
             }
           },
           spec: {

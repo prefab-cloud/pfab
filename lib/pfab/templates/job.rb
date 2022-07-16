@@ -5,6 +5,10 @@ module Pfab
         f << YAML.dump(job.deep_stringify_keys)
       end
 
+      def application_type
+        "job"
+      end
+
       def job
         {
           apiVersion: "batch/v1",
@@ -15,7 +19,8 @@ module Pfab
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
-              "application-type" => "job",
+              "application-type" => application_type,
+              "deploy-id" => deploy_id
             }
           },
           spec: {

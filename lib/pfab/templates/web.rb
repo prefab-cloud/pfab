@@ -136,6 +136,10 @@ module Pfab
         get("readinessProbe") || default_probe
       end
 
+      def application_type
+        "web"
+      end
+
       def deployment
         {
           kind: "Deployment",
@@ -146,7 +150,8 @@ module Pfab
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
-              "application-type" => "web",
+              "application-type" => application_type,
+              "deploy-id" => deploy_id
             }
           },
           spec: {
