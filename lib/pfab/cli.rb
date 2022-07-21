@@ -31,8 +31,9 @@ module Pfab
         c.syntax = "pfab build"
         c.summary = "build image"
         c.option "--force", "force build and push"
+        c.option "--check", "just check if built"
         c.action do |_args, options|
-          cmd_build(force: options.force)
+          cmd_build(force: options.force, checkonly: options.check)
         end
       end
 
@@ -80,6 +81,18 @@ module Pfab
           first_pod = get_first_pod(app_name)
 
           puts_and_system("kubectl logs -f #{first_pod}")
+        end
+      end
+
+      command :restart do |c|
+        c.syntax = "pfab restart"
+        c.summary = "rolling restart of a deployment"
+        c.description = "rolling restart of a deployment"
+        c.action do
+          set_kube_context
+          app_name = get_app_name
+
+          puts_and_system "kubectl rollout restart deployment.apps/#{app_name}"
         end
       end
 
@@ -193,7 +206,16 @@ module Pfab
       end
     end
 
-    def cmd_build(force: false)
+    def image_exists?(full_image_name)
+
+      # return 0 if image exists 1 if not
+      cmd = "docker manifest inspect #{full_image_name} > /dev/null ; echo $?"
+      say "Looking for images with #{cmd}"
+      existing = `#{cmd}`.strip
+      existing == "0"
+    end
+
+    def cmd_build(force: false, checkonly: false)
       rev = get_current_sha
       say "This repo is at rev: #{rev}"
       uncommitted_changes = !`git diff-index HEAD --`.empty?
@@ -209,14 +231,14 @@ module Pfab
 
       full_image_name = "#{container_repository}/#{image_name}:#{rev}"
 
-      # return 0 if image exists 1 if not
-      cmd = "docker manifest inspect #{full_image_name} > /dev/null ; echo $?"
-      say "Looking for images with #{cmd}"
-      existing = `#{cmd}`.strip
-
-      if existing == "0" && !force
-        say "Found image #{full_image_name} already, skipping prebuild, build & push"
-        return true
+      unless force
+        if image_exists?(full_image_name)
+          say "Found image #{full_image_name} already, skipping prebuild, build & push"
+          return true
+        else
+          say "No image #{full_image_name} present"
+        end
+        return if checkonly
       end
 
       say "No image #{full_image_name} present, building"
