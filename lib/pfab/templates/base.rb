@@ -42,6 +42,10 @@ module Pfab
         }
       end
 
+      # overridden in subtypes
+      def application_type
+        "base"
+      end
 
       def deploy_id
         "#{@data['application']}.#{application_type}.#{@data['deployed_name']}"
