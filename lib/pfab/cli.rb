@@ -274,7 +274,7 @@ module Pfab
     end
 
     def get_current_sha
-      `git rev-parse --short --verify HEAD`.chomp
+      `git rev-parse --short=8 --verify HEAD`.chomp
     end
 
     def set_kube_context
