@@ -23,7 +23,7 @@ module Pfab
               "deploy-id" => deploy_id,
               "tags.datadoghq.com/env": @data['env'],
               "tags.datadoghq.com/service": @data['deployed_name'],
-              "tags.datadoghq.com/service": @data['sha']
+              "tags.datadoghq.com/version": @data['sha']
             }
           },
           spec: {
@@ -37,7 +37,7 @@ module Pfab
                   "application-type" => "job",
                   "tags.datadoghq.com/env": @data['env'],
                   "tags.datadoghq.com/service": @data['deployed_name'],
-                  "tags.datadoghq.com/service": @data['sha']
+                  "tags.datadoghq.com/version": @data['sha']
                 },
               },
               spec: {
