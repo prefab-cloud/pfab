@@ -52,10 +52,12 @@ module Pfab
       end
 
       def env_vars
-
         env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] },
                      "DEPLOY_ID" => { value: deploy_id },
-                     "POD_ID" => { valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } }
+                     "POD_ID" => { valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } },
+                     "DD_ENV" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/env']" } } },
+                     "DD_SERVICE" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/service']" } } },
+                     "DD_VERSION" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/version']" } } }
         }
 
         # load defaults

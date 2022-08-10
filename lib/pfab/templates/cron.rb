@@ -20,7 +20,10 @@ module Pfab
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
               "application-type" => application_type,
-              "deploy-id" => deploy_id
+              "deploy-id" => deploy_id,
+              "tags.datadoghq.com/env": @data['env'],
+              "tags.datadoghq.com/service": @data['deployed_name'],
+              "tags.datadoghq.com/service": @data['sha']
             }
           },
           spec: {
@@ -44,6 +47,9 @@ module Pfab
                       application: @data['application'],
                       "deployed-name" => @data['deployed_name'],
                       "application-type" => "cron",
+                      "tags.datadoghq.com/env": @data['env'],
+                      "tags.datadoghq.com/service": @data['deployed_name'],
+                      "tags.datadoghq.com/service": @data['sha']
                     },
                   },
                   spec: {

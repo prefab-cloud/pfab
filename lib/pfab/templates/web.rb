@@ -151,7 +151,10 @@ module Pfab
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
               "application-type" => application_type,
-              "deploy-id" => deploy_id
+              "deploy-id" => deploy_id,
+              "tags.datadoghq.com/env": @data['env'],
+              "tags.datadoghq.com/service": @data['deployed_name'],
+              "tags.datadoghq.com/service": @data['sha']
             }
           },
           spec: {
@@ -176,6 +179,9 @@ module Pfab
                   application: @data['application'],
                   "deployed-name" => @data['deployed_name'],
                   "application-type" => "web",
+                  "tags.datadoghq.com/env": @data['env'],
+                  "tags.datadoghq.com/service": @data['deployed_name'],
+                  "tags.datadoghq.com/version": @data['sha']
                 },
               },
               spec: {
@@ -188,8 +194,22 @@ module Pfab
                     resources: resources,
                     livenessProbe: livenessProbe,
                     readinessProbe: readinessProbe,
+                    volumeMounts: [
+                      {
+                        name: "apmsocketpath",
+                        mountPath: "/var/run/datadog"
+                      }
+                    ]
                   }
-                ]
+                ],
+                volumes: [
+                  {
+                    name: "apmsocketpath",
+                    hostPath: {
+                      path: "/var/run/datadog/",
+                    }
+                  }
+                ],
               },
             },
           },
