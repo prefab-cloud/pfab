@@ -154,7 +154,7 @@ module Pfab
               "deploy-id" => deploy_id,
               "tags.datadoghq.com/env": @data['env'],
               "tags.datadoghq.com/service": @data['deployed_name'],
-              "tags.datadoghq.com/version": @data['sha']
+              "tags.datadoghq.com/version":"#{@data['sha']}"
             }
           },
           spec: {
@@ -181,7 +181,7 @@ module Pfab
                   "application-type" => "web",
                   "tags.datadoghq.com/env": @data['env'],
                   "tags.datadoghq.com/service": @data['deployed_name'],
-                  "tags.datadoghq.com/version": @data['sha']
+                  "tags.datadoghq.com/version": "#{@data['sha']}"
                 },
               },
               spec: {
