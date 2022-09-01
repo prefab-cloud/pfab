@@ -11,7 +11,7 @@ module Pfab
 
       def job
         {
-          apiVersion: "batch/v1beta1",
+          apiVersion: "batch/v1",
           kind: "CronJob",
           metadata: {
             name: "#{@data['deployed_name']}-#{@data['sha']}",
