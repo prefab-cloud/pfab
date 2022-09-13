@@ -55,6 +55,7 @@ module Pfab
         env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] },
                      "DEPLOY_ID" => { value: deploy_id },
                      "POD_ID" => { valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } },
+                     "K8S_HOSTNAME" => { valueFrom: { fieldRef: { fieldPath: 'kubernetes.io/hostname' } } },
                      "DD_ENV" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/env']" } } },
                      "DD_SERVICE" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/service']" } } },
                      "DD_VERSION" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/version']" } } }
