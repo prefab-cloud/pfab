@@ -81,6 +81,11 @@ module Pfab
             env_vars[env_var_name] = { valueFrom: {
               fieldRef: { fieldPath: field_name }
             } }
+          elsif v.to_s.start_with? "configmap/"
+             (_, configMapName, keyName) = v.split("/")
+             env_vars[env_var_name] = { valueFrom: {
+               configMapKeyRef: { name: configMapName, key: keyName }
+             } }
           else
             env_vars[env_var_name] = { value: v }
           end
