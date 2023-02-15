@@ -15,7 +15,7 @@ module Pfab
           apiVersion: "apps/v1",
           metadata: {
             name: @data['deployed_name'],
-            namespace: @data['env'],
+            namespace: get_namespace,
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
