@@ -22,7 +22,14 @@ module Pfab
       $dryrun = false
       global_option("--dryrun") { $dryrun = true }
       $env = :staging
-      global_option("-p") { $env = :production }
+      global_option("-p") do
+        puts "please use `-e production` next time!"
+        $env = :production
+      end
+      global_option("-e", "--environment ENV", "specify target env") do |env_name|
+        puts "Using environment #{env_name}"
+        $env = env_name
+      end
       global_option("-a", "--application_name APP_NAME", "run without prompting for app") do |app_name|
         $app_name = app_name
       end
