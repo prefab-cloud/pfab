@@ -164,6 +164,23 @@ module Pfab
                                  readOnly: secret_mount['readOnly'] || true
                                })
         end
+
+        if get("datadogVolumeMountEnabled")
+          datadog_volume_name = "ddsocket"
+          datadog_path = "/var/run/datadog"
+          volumes.append({
+                           name: datadog_volume_name,
+                           hostPath: {
+                            path: datadog_path
+                           }
+                         })
+          volume_mounts.append(
+            name: datadog_volume_name,
+            mountPath: datadog_path,
+            readOnly: true
+          )
+        end
+
         {
           kind: "Deployment",
           apiVersion: "apps/v1",
@@ -230,23 +247,9 @@ module Pfab
                     readinessProbe: readinessProbe,
                     startupProbe: startupProbe,
                     volumeMounts: volume_mounts
-                    # volumeMounts: [
-                    #   {
-                    #     name: "apmsocketpath",
-                    #     mountPath: "/var/run/datadog"
-                    #   }
-                    # ]
                   }
                 ],
                 volumes: volumes
-                # volumes: [
-                #   {
-                #     name: "apmsocketpath",
-                #     hostPath: {
-                #       path: "/var/run/datadog/",
-                #     }
-                #   }
-                # ],
               }.compact,
             },
           }.compact,

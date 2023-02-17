@@ -53,7 +53,7 @@ module Pfab
                     },
                   },
                   spec: {
-
+                    serviceAccountName: get('serviceAccountName'),
                     containers: [
                       {
                         image: image_name,
@@ -64,7 +64,7 @@ module Pfab
                       },
                     ],
                     restartPolicy: "Never",
-                  },
+                  }.compact,
                 },
                 backoffLimit: 2,
               },
