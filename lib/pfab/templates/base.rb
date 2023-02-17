@@ -17,6 +17,10 @@ module Pfab
         app_vars.dig(@data["env"], key) || app_vars[key]
       end
 
+      def get_namespace()
+        get("namespace") || @data['env']
+      end
+
       def cpu(req_type)
         default_cpu_string = @data["config"]["default_cpu_string"] || "50m/250m"
         (request, limit) = (get("cpu") || default_cpu_string).split("/")
@@ -82,9 +86,9 @@ module Pfab
               fieldRef: { fieldPath: field_name }
             } }
           elsif v.to_s.start_with? "configmap/"
-             (_, configMapName, keyName) = v.split("/")
+             (_, configmap_name, key_name) = v.split("/")
              env_vars[env_var_name] = { valueFrom: {
-               configMapKeyRef: { name: configMapName, key: keyName }
+               configMapKeyRef: { name: configmap_name, key: key_name }
              } }
           else
             env_vars[env_var_name] = { value: v }

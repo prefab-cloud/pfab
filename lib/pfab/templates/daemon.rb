@@ -15,7 +15,7 @@ module Pfab
           apiVersion: "apps/v1",
           metadata: {
             name: @data['deployed_name'],
-            namespace: @data['env'],
+            namespace: get_namespace,
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
@@ -28,6 +28,7 @@ module Pfab
           },
           spec: {
             replicas: get("replicas") || 1,
+            serviceAccountName: get('serviceAccountName'),
             selector: {
               matchLabels: {
                 "deployed-name" => @data['deployed_name'],
@@ -60,7 +61,7 @@ module Pfab
                 ]
               },
             },
-          },
+          }.compact,
         }
       end
     end

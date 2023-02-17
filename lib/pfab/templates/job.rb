@@ -15,7 +15,7 @@ module Pfab
           kind: "Job",
           metadata: {
             name: "job-#{@data['deployed_name']}-#{@data['sha']}",
-            namespace: @data['env'],
+            namespace: get_namespace,
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
@@ -30,7 +30,7 @@ module Pfab
             template: {
               metadata: {
                 name: "#{@data['deployed_name']}-#{@data['sha']}",
-                namespace: @data['env'],
+                namespace: get_namespace,
                 labels: {
                   application: @data['application'],
                   "deployed-name" => @data['deployed_name'],
@@ -41,6 +41,7 @@ module Pfab
                 },
               },
               spec: {
+                serviceAccountName: get('serviceAccountName'),
                 containers: [
                   {
                     image: image_name,
@@ -51,7 +52,7 @@ module Pfab
                   },
                 ],
                 restartPolicy: "Never",
-              },
+              }.compact,
             },
             backoffLimit: 0,
           },

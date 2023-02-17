@@ -6,7 +6,11 @@ module Pfab
           puts "No host to deploy to for #{@data['deployed_name']}. Skipping."
         else
           f << YAML.dump(service.deep_stringify_keys)
-          f << YAML.dump(ingress.deep_stringify_keys)
+          if not app_vars.has_key?('generateIngressEnabled') || app_vars['generateIngressEnabled']
+            f << YAML.dump(ingress.deep_stringify_keys)
+          else
+            puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
+          end
           f << YAML.dump(deployment.deep_stringify_keys)
         end
       end
@@ -17,7 +21,7 @@ module Pfab
           kind: "Service",
           metadata: {
             name: @data['deployed_name'],
-            namespace: @data['env'],
+            namespace: get_namespace,
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
@@ -32,8 +36,9 @@ module Pfab
               {
                 name: "http",
                 port: 80,
-                targetPort: get("port"),
-              }
+                targetPort: app_vars["port"],
+                appProtocol: app_vars["appProtocol"]
+              }.compact
             ]
           }
         }
@@ -51,7 +56,7 @@ module Pfab
           kind: "Ingress",
           metadata: {
             name: "ingress-#{@data['deployed_name']}",
-            namespace: @data['env'],
+            namespace: get_namespace,
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
@@ -136,17 +141,52 @@ module Pfab
         get("readinessProbe") || default_probe
       end
 
+      def startupProbe
+        get("startupProbe") || default_probe
+      end
+
       def application_type
         "web"
       end
 
       def deployment
+        secret_mounts = get("secretMounts") || []
+        volume_mounts = []
+        volumes = []
+        secret_mounts.each do |secret_mount|
+          volumes.append({
+                           name: secret_mount['name'],
+                           secret: { secretName: secret_mount['secretName'] }
+                         })
+          volume_mounts.append({
+                                 name: secret_mount['name'],
+                                 mountPath: secret_mount['path'],
+                                 readOnly: secret_mount['readOnly'] || true
+                               })
+        end
+
+        if get("datadogVolumeMountEnabled")
+          datadog_volume_name = "ddsocket"
+          datadog_path = "/var/run/datadog"
+          volumes.append({
+                           name: datadog_volume_name,
+                           hostPath: {
+                            path: datadog_path
+                           }
+                         })
+          volume_mounts.append(
+            name: datadog_volume_name,
+            mountPath: datadog_path,
+            readOnly: true
+          )
+        end
+
         {
           kind: "Deployment",
           apiVersion: "apps/v1",
           metadata: {
             name: @data['deployed_name'],
-            namespace: @data['env'],
+            namespace: get_namespace,
             labels: {
               application: @data['application'],
               "deployed-name" => @data['deployed_name'],
@@ -185,6 +225,7 @@ module Pfab
                 },
               },
               spec: {
+                serviceAccountName: get('serviceAccountName'),
                 containers: [
                   {
                     image: image_name,
@@ -192,27 +233,26 @@ module Pfab
                     command: get("command").split(" "),
                     env: env_vars,
                     resources: resources,
+                    ports: [
+                      {
+                        name: "main",
+                        containerPort: app_vars["port"]
+                      },
+                      {
+                        name: "health-port",
+                        containerPort: 8085 # the default micronaut endpoint port
+                      }
+                    ],
                     livenessProbe: livenessProbe,
                     readinessProbe: readinessProbe,
-                    volumeMounts: [
-                      {
-                        name: "apmsocketpath",
-                        mountPath: "/var/run/datadog"
-                      }
-                    ]
+                    startupProbe: startupProbe,
+                    volumeMounts: volume_mounts
                   }
                 ],
-                volumes: [
-                  {
-                    name: "apmsocketpath",
-                    hostPath: {
-                      path: "/var/run/datadog/",
-                    }
-                  }
-                ],
-              },
+                volumes: volumes
+              }.compact,
             },
-          },
+          }.compact,
         }
       end
     end
