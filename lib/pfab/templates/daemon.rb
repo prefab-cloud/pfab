@@ -28,7 +28,6 @@ module Pfab
           },
           spec: {
             replicas: get("replicas") || 1,
-            serviceAccountName: get('serviceAccountName'),
             selector: {
               matchLabels: {
                 "deployed-name" => @data['deployed_name'],
@@ -50,6 +49,7 @@ module Pfab
                 },
               },
               spec: {
+                serviceAccountName: get('serviceAccountName'),
                 containers: [
                   {
                     image: image_name,
@@ -59,7 +59,7 @@ module Pfab
                     resources: resources,
                   }
                 ]
-              },
+              }.compact,
             },
           }.compact,
         }
