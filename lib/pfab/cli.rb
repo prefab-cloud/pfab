@@ -117,7 +117,7 @@ module Pfab
 
           first_pod = get_first_pod app_name
 
-          puts_and_system "kubectl exec -it #{first_pod} -- /bin/bash"
+          puts_and_system "kubectl exec -it #{first_pod} -- /bin/sh"
         end
       end
 
