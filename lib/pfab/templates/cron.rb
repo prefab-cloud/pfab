@@ -33,7 +33,7 @@ module Pfab
             jobTemplate: {
               metadata: {
                 name: "#{@data['deployed_name']}-#{@data['sha']}",
-                namespace: @data['env'],
+                namespace: get_namespace,
                 labels: {
                   application: @data['application'],
                   "deployed-name" => @data['deployed_name'],

@@ -17,8 +17,12 @@ module Pfab
         app_vars.dig(@data["env"], key) || app_vars[key]
       end
 
+      def get_top_level(key)
+        @data["application_yaml"].dig(@data["env"], key) || @data["application_yaml"][key]
+      end
+
       def get_namespace()
-        get("namespace") || @data['env']
+        get("namespace") || get_top_level("namespace") || @data['env']
       end
 
       def cpu(req_type)
