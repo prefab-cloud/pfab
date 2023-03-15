@@ -145,6 +145,10 @@ module Pfab
         get("startupProbe") || default_probe
       end
 
+      def lifecycle
+        get("lifecycle")
+      end
+
       def application_type
         "web"
       end
@@ -246,6 +250,7 @@ module Pfab
                     livenessProbe: livenessProbe,
                     readinessProbe: readinessProbe,
                     startupProbe: startupProbe,
+                    lifecycle: lifecycle,
                     volumeMounts: volume_mounts
                   }
                 ],
