@@ -104,6 +104,7 @@ module Pfab
       end
 
       command :exec do |c|
+        c.option "-c", "--command command", "use with exec to run a command and exit. default is /bin/sh"
         c.syntax = "pfab exec"
         c.summary = "kubectl exec into a  pod"
         c.description = "CLI to the Cloud"
@@ -111,13 +112,11 @@ module Pfab
                   "pfab exec"
         c.example "exec into the first pod in production",
                   "ezp -p exec"
-        c.action do
+        c.action do |args, options|
           set_kube_context
           app_name = get_app_name
-
           first_pod = get_first_pod app_name
-
-          puts_and_system "kubectl exec -it #{first_pod} -- /bin/sh"
+          puts_and_system "kubectl exec -it #{first_pod} -- #{options.command || '/bin/sh'}"
         end
       end
 
