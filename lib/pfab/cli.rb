@@ -310,6 +310,8 @@ module Pfab
     def set_kube_context
       str = "kubectl config use-context #{config["envs"][$env.to_s]["context"]}"
       puts_and_system str
+      str = "kubectl config set-context --current --namespace=#{yy.namespace}"
+      puts_and_system str
     end
 
     def image_name
