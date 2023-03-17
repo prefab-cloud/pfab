@@ -27,6 +27,9 @@ module Pfab
             }
           },
           spec: {
+            ttlSecondsAfterFinished: get('ttlSecondsAfterFinished'),
+            completions: get('completions') || 1,
+            parallelism: get('parallelism') || 1,
             template: {
               metadata: {
                 name: "#{@data['deployed_name']}-#{@data['sha']}",
@@ -55,7 +58,7 @@ module Pfab
               }.compact,
             },
             backoffLimit: 0,
-          },
+          }.compact,
         }
       end
     end
