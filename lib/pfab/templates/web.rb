@@ -1,3 +1,5 @@
+require "rubygems/safe_yaml"
+
 module Pfab
   module Templates
     class Web < Base
@@ -5,13 +7,13 @@ module Pfab
         if get("host").nil?
           puts "No host to deploy to for #{@data['deployed_name']}. Skipping."
         else
-          f << YAML.dump(service.deep_stringify_keys)
+          f << StyledYAML.dump(service.deep_stringify_keys)
           if not app_vars.has_key?('generateIngressEnabled') || app_vars['generateIngressEnabled']
-            f << YAML.dump(ingress.deep_stringify_keys)
+            f << StyledYAML.dump(ingress.deep_stringify_keys)
           else
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
           end
-          f << YAML.dump(deployment.deep_stringify_keys)
+          f << StyledYAML.dump(deployment.deep_stringify_keys)
         end
       end
 
@@ -198,7 +200,7 @@ module Pfab
               "deploy-id" => deploy_id,
               "tags.datadoghq.com/env": @data['env'],
               "tags.datadoghq.com/service": @data['deployed_name'],
-              "tags.datadoghq.com/version":"#{@data['sha']}"
+              "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
             }
           },
           spec: {
@@ -225,7 +227,7 @@ module Pfab
                   "application-type" => "web",
                   "tags.datadoghq.com/env": @data['env'],
                   "tags.datadoghq.com/service": @data['deployed_name'],
-                  "tags.datadoghq.com/version": "#{@data['sha']}"
+                  "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
                 },
               },
               spec: {
