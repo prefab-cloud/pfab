@@ -2,7 +2,7 @@ module Pfab
   module Templates
     class Daemon < Base
       def write_to(f)
-        f << YAML.dump(deployment.deep_stringify_keys)
+        f << StyledYAML.dump(deployment.deep_stringify_keys)
       end
 
       def application_type
@@ -23,7 +23,7 @@ module Pfab
               "deploy-id" => deploy_id,
               "tags.datadoghq.com/env": @data['env'],
               "tags.datadoghq.com/service": @data['deployed_name'],
-              "tags.datadoghq.com/version":"#{@data['sha']}"
+              "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
             }
           },
           spec: {
@@ -45,7 +45,7 @@ module Pfab
                   "application-type" => "daemon",
                   "tags.datadoghq.com/env": @data['env'],
                   "tags.datadoghq.com/service": @data['deployed_name'],
-                  "tags.datadoghq.com/version": "#{@data['sha']}"
+                  "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
                 },
               },
               spec: {

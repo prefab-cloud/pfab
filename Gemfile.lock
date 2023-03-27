@@ -106,6 +106,7 @@ GEM
       json (>= 1.8, < 3)
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
+    styled_yaml (0.0.1)
     test-unit (3.2.9)
       power_assert
     thread_safe (0.3.6)
@@ -117,12 +118,13 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport
-  bundler (~> 1.0)
+  bundler (~> 2.3)
   commander
   juwelier (~> 2.4.9)!
   pry-byebug
   rdoc (~> 3.12)
   simplecov
+  styled_yaml (~> 0.0.1)
   test-unit
 
 BUNDLED WITH

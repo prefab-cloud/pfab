@@ -3,6 +3,7 @@ require "net/http"
 require "yaml"
 require "json"
 require 'active_support/core_ext/hash/indifferent_access'
+require 'styled_yaml'
 
 module Pfab
   class CLI
