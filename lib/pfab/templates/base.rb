@@ -25,6 +25,14 @@ module Pfab
         get("namespace") || get_top_level("namespace") || @data['env']
       end
 
+      def get_command()
+        cmd = get("command")
+        if cmd.kind_of?(Array)
+          return cmd
+        end
+        return cmd.split(" ")
+      end
+
       def cpu(req_type)
         default_cpu_string = @data["config"]["default_cpu_string"] || "50m/250m"
         (request, limit) = (get("cpu") || default_cpu_string).split("/")
