@@ -236,7 +236,7 @@ module Pfab
                   {
                     image: image_name,
                     name: @data['deployed_name'],
-                    command: get("command").split(" "),
+                    command: get_command,
                     env: env_vars,
                     resources: resources,
                     ports: [

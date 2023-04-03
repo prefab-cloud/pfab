@@ -49,7 +49,7 @@ module Pfab
                   {
                     image: image_name,
                     name: @data['deployed_name'],
-                    command: app_vars["command"].split(" "),
+                    command: get_command,
                     env: env_vars,
                     resources: resources,
                   },
