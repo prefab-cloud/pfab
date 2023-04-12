@@ -88,7 +88,7 @@ module Pfab
 
           first_pod = get_first_pod(app_name)
 
-          puts_and_system("kubectl logs -f #{first_pod}")
+          kubectl("logs -f #{first_pod}")
         end
       end
 
@@ -100,7 +100,7 @@ module Pfab
           set_kube_context
           app_name = get_app_name
 
-          puts_and_system "kubectl rollout restart deployment.apps/#{app_name}"
+          kubectl "rollout restart deployment.apps/#{app_name}"
         end
       end
 
@@ -117,7 +117,7 @@ module Pfab
           set_kube_context
           app_name = get_app_name
           first_pod = get_first_pod app_name
-          puts_and_system "kubectl exec -it #{first_pod} -- #{options.command || '/bin/sh'}"
+          kubectl "exec -it #{first_pod} -- #{options.command || '/bin/sh'}"
         end
       end
 
@@ -142,11 +142,11 @@ module Pfab
           selector = "application=#{@application_yaml['name']}"
 
           if options.watch
-            puts_and_system "kubectl get pods -l #{selector} -w"
+            kubectl "get pods -l #{selector} -w"
           elsif $verbose
-            puts_and_system "kubectl describe pods -l #{selector}"
+            kubectl "describe pods -l #{selector}"
           else
-            puts_and_system "kubectl get ingresses,jobs,services,cronjobs,deployments,pods -l #{selector}"
+            kubectl "get ingresses,jobs,services,cronjobs,deployments,pods -l #{selector}"
           end
         end
       end
@@ -185,9 +185,9 @@ module Pfab
           puts "THIS APPLIES TO THE ENTIRE NAMESPACE"
           types = %w(Failed Pending Succeeded)
           types.each do |type|
-            system("kubectl get pods --field-selector status.phase=#{type}")
+            kubectl("get pods --field-selector status.phase=#{type}")
             if agree("Delete those?")
-              `kubectl delete pods --field-selector status.phase=#{type}`
+              kubectl("delete pods --field-selector status.phase=#{type}")
               puts "Deleted"
             end
           end
@@ -206,9 +206,9 @@ module Pfab
         app = deployables[app_name]
         if app[:deployable_type] == "cron"
           deployed_name = deployed_name(app)
-          puts_and_system("kubectl delete cronjob -l deployed-name=#{deployed_name}")
+          kubectl("delete cronjob -l deployed-name=#{deployed_name}")
         end
-        puts_and_system("kubectl apply -f .application-k8s-#{$env}-#{app_name}.yaml")
+        kubectl("apply -f .application-k8s-#{$env}-#{app_name}.yaml")
         puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
         puts_and_system("git push origin --tags")
       end
@@ -310,8 +310,6 @@ module Pfab
     def set_kube_context
       str = "kubectl config use-context #{config["envs"][$env.to_s]["context"]}"
       puts_and_system str
-      str = "kubectl config set-context --current --namespace=#{yy.namespace}"
-      puts_and_system str
     end
 
     def image_name
@@ -324,6 +322,10 @@ module Pfab
 
     def config
       @_config ||= YAML.load(File.read(File.join(Dir.home, ".pfab.yaml")))
+    end
+
+    def kubectl cmd
+      puts_and_system "kubectl #{cmd} --namespace=#{yy.namespace}"
     end
 
     def puts_and_system cmd
@@ -371,7 +373,7 @@ module Pfab
     end
 
     def get_pods(app)
-      get_pods_str = "kubectl get pods -o json -l deployed-name=#{app}"
+      get_pods_str = "kubectl get pods -o json -l deployed-name=#{app} --namespace=#{yy.namespace}"
       puts get_pods_str
       pods_str = `#{get_pods_str}`
       JSON.parse(pods_str)
