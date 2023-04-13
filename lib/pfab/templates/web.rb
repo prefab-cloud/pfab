@@ -186,6 +186,17 @@ module Pfab
             readOnly: true
           )
         end
+        ports = [  {
+                     name: "main",
+                     containerPort: app_vars["port"]
+                   }]
+        if get("additionalPorts")
+          get("additionalPorts").each do |name, number|
+            ports.append(
+              {name: name, containerPort: number}
+            )
+          end
+        end
 
         {
           kind: "Deployment",
@@ -239,16 +250,7 @@ module Pfab
                     command: get_command,
                     env: env_vars,
                     resources: resources,
-                    ports: [
-                      {
-                        name: "main",
-                        containerPort: app_vars["port"]
-                      },
-                      {
-                        name: "health-port",
-                        containerPort: 8085 # the default micronaut endpoint port
-                      }
-                    ],
+                    ports: ports,
                     livenessProbe: livenessProbe,
                     readinessProbe: readinessProbe,
                     startupProbe: startupProbe,
