@@ -4,6 +4,8 @@ module Pfab
 
     def initialize(apps:, application_yaml:, image_name:, env:, sha:, config:)
       @apps = apps
+      namespace = application_yaml.dig(env.to_s, "namespace") || application_yaml["namespace"]
+      raise "No namespace founds" unless namespace
       @base_data = {
         "env" => env.to_s,
         'image_name' => image_name,
@@ -11,7 +13,8 @@ module Pfab
         'container_repository' => config["container.repository"],
         'config' => config,
         'application' => application_yaml["name"],
-        'application_yaml' => application_yaml
+        'application_yaml' => application_yaml,
+        'namespace' => namespace,
       }
     end
 
@@ -27,8 +30,11 @@ module Pfab
       data
     end
 
-    def generate(keys)
+    def namespace
+      @base_data['namespace']
+    end
 
+    def generate(keys)
       keys.each do |key|
         props = @apps[key]
         data = data_for(key, props)
@@ -48,9 +54,6 @@ module Pfab
         end
         filename
       end
-
     end
-
-
   end
 end
