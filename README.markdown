@@ -124,5 +124,5 @@ Releasing
 Copyright
 ---------
 
-Copyright (c) 2018 Jeff Dwyer. See
+Copyright (c) 2023 Prefab Inc. See
 LICENSE.txt for further details.
