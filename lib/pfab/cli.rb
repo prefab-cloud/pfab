@@ -373,7 +373,7 @@ module Pfab
     end
 
     def get_pods(app)
-      kubectl "get pods -o json -l deployed-name=#{app}"
+      get_pods_str = "kubectl get pods -o json -l deployed-name=#{app} --namespace=#{yy.namespace}"
       pods_str = `#{get_pods_str}`
       JSON.parse(pods_str)
     end
