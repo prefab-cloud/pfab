@@ -117,7 +117,7 @@ module Pfab
           set_kube_context
           app_name = get_app_name
           first_pod = get_first_pod app_name
-          kubectl "exec -it #{first_pod} -- #{options.command || '/bin/sh'}"
+          kubectl "exec -it #{first_pod}", "-- #{options.command || '/bin/sh'}"
         end
       end
 
@@ -324,8 +324,8 @@ module Pfab
       @_config ||= YAML.load(File.read(File.join(Dir.home, ".pfab.yaml")))
     end
 
-    def kubectl cmd
-      puts_and_system "kubectl #{cmd} --namespace=#{yy.namespace}"
+    def kubectl cmd, post_cmd = ""
+      puts_and_system "kubectl #{cmd} --namespace=#{yy.namespace} #{post_cmd}"
     end
 
     def puts_and_system cmd
