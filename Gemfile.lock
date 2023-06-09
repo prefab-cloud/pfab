@@ -66,7 +66,7 @@ GEM
     highline (1.7.10)
     i18n (1.8.11)
       concurrent-ruby (~> 1.0)
-    json (1.8.6)
+    json (2.6.3)
     jwt (2.3.0)
     kamelcase (0.0.2)
       semver2 (~> 3)
@@ -98,8 +98,7 @@ GEM
     rack (2.2.3)
     rake (13.0.6)
     rchardet (1.8.0)
-    rdoc (3.12.2)
-      json (~> 1.4)
+    rdoc (6.1.2.1)
     ruby2_keywords (0.0.5)
     semver2 (3.4.2)
     simplecov (0.16.1)
@@ -123,7 +122,7 @@ DEPENDENCIES
   commander
   juwelier (~> 2.4.9)!
   pry-byebug
-  rdoc (~> 3.12)
+  rdoc (~> 6.1)
   simplecov
   styled_yaml (~> 0.0.1)
   test-unit
