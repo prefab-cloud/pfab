@@ -243,6 +243,7 @@ module Pfab
               },
               spec: {
                 serviceAccountName: get('serviceAccountName'),
+                terminationGracePeriodSeconds: get("terminationGracePeriodSeconds") || 30,
                 containers: [
                   {
                     image: image_name,
