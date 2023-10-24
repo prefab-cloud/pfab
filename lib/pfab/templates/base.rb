@@ -63,6 +63,15 @@ module Pfab
         "#{@data['application']}.#{application_type}.#{@data['deployed_name']}"
       end
 
+      def env_from
+        env_from = []
+        env_from << @data.dig("application_yaml", :env_from)
+        env_from << @data.dig("application_yaml", @data["env"], :env_from)
+        env_from.flatten!
+        env_from.compact!
+        env_from.empty? ? nil : env_from
+      end
+
       def env_vars
         env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] },
                      "DEPLOY_ID" => { value: deploy_id },

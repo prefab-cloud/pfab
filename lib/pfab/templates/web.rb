@@ -250,6 +250,7 @@ module Pfab
                     name: @data['deployed_name'],
                     command: get_command,
                     env: env_vars,
+                    envFrom: env_from,
                     resources: resources,
                     ports: ports,
                     livenessProbe: livenessProbe,
@@ -257,7 +258,7 @@ module Pfab
                     startupProbe: startupProbe,
                     lifecycle: lifecycle,
                     volumeMounts: volume_mounts
-                  }
+                  }.compact
                 ],
                 volumes: volumes
               }.compact,

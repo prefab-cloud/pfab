@@ -60,12 +60,18 @@ deployables:
     memory: 600Mi/768Mi
 
 
+env_from:
+    - configMapRef:
+        name: my_config_map
+    - secretRef:
+        name: my_secrets
+
 staging:
   environment:
-    ENV: staging
+    ENV_VAR_URL: "staging.example.com"
 production:
   environment:
-    ENV: production
+    ENV_VAR_URL: "example.com"
 env_secrets:
   AWS_SECRET_ACCESS_KEY: secretstore/aws_secret_access_key
 environment:
@@ -105,7 +111,7 @@ Local Testing
 -----------------------------------------
 ```bash
 bundle exec rake build
-gem install --local pkg/pfab-0.11.0.gem
+gem install --local pkg/pfab-0.44.0.gem
 ```
 ```ruby
 gem 'pfab', :path => "../pfab"

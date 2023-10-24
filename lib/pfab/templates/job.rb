@@ -51,6 +51,7 @@ module Pfab
                     name: @data['deployed_name'],
                     command: get_command,
                     env: env_vars,
+                    envFrom: env_from,
                     resources: resources,
                   },
                 ],
