@@ -211,6 +211,10 @@ module Pfab
         kubectl("apply -f .application-k8s-#{$env}-#{app_name}.yaml")
         puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
         puts_and_system("git push origin --tags")
+
+        # watch
+        selector = "application=#{@application_yaml['name']}"
+        kubectl "get pods -l #{selector} -w"
       end
     end
 
