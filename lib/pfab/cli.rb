@@ -269,7 +269,7 @@ module Pfab
         end
       end
 
-      build_cmd = "docker buildx build -t #{image_name} --platform linux/amd64 ."
+      build_cmd = "docker buildx build -t #{image_name} --platform linux/amd64 #{build_args} ."
       puts build_cmd
       result = system(build_cmd)
 
@@ -318,6 +318,14 @@ module Pfab
 
     def image_name
       @application_yaml["name"]
+    end
+
+    def build_args
+      args = @application_yaml["build_args"] || []
+      if args.any?
+        return args.map{|a| "--build-arg #{a}=#{a}"}.join(" ")
+      end
+      ""
     end
 
     def container_repository
