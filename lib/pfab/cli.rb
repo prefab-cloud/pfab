@@ -323,7 +323,7 @@ module Pfab
     def build_args
       args = @application_yaml["build_args"] || []
       if args.any?
-        return args.map{|a| "--build-arg #{a}=#{a}"}.join(" ")
+        return args.map{|a| "--build-arg #{a}=$#{a}"}.join(" ")
       end
       ""
     end
