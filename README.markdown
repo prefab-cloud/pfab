@@ -12,22 +12,6 @@ pfab is designed to support strong opinions, but you're free to have whatever op
 
 This is what we use to deploy [Prefab](https://prefab.cloud/). 
 
-## What it Does
-```
-  COMMANDS:
-        
-    apply         kubectl apply         
-    build         build image           
-    clean         clean up pods         
-    exec          kubectl exec into a pod              
-    generate_yaml build k8s yaml from application.yaml    
-    logs          tail logs             
-    restart       rolling restart of a deployment                       
-    run_local     run an app locally            
-    shipit        build, generate, apply                
-    status        status of an app      
-```
-
 ## Example
 
 This is an example of a simple application.yaml that we hope is self explanatory.
@@ -117,8 +101,25 @@ kubectl exec -it myapp-web-web-8678649967-fqfgb --namespace=myapp -- /bin/sh
 
 ```
 
-## Templates
-pfab supports `web`, `job`, `cron`, and `daemon` deployables. Each deployable type is just a ruby file that outputs json. To add your own you could simply create / modify the `web.rb`. Best practice is to put as much messy, boiler plate as possible into the templates and keep the `application.yaml` as clean as possible.
+## Deployable Types
+pfab supports `web`, `job`, `cron`, and `daemon` deployables. Each deployable type is just a ruby file that outputs json. To add your own you could simply create / modify the `web.rb`. Best practice is to put as much messy, boiler plate as possible into the templates and keep the `application.yaml` as clean as possible. An example of a deployable is [cron.rb](https://github.com/prefab-cloud/pfab/blob/main/lib/pfab/templates/cron.rb).
+
+
+## What it Does
+```
+  COMMANDS:
+        
+    apply         kubectl apply         
+    build         build image           
+    clean         clean up pods         
+    exec          kubectl exec into a pod              
+    generate_yaml build k8s yaml from application.yaml    
+    logs          tail logs             
+    restart       rolling restart of a deployment                       
+    run_local     run an app locally            
+    shipit        build, generate, apply                
+    status        status of an app      
+```
 
 ## Project Status
 This is very much an internal tool today. It would be worth having a conversation before using it yourself. You may want to just fork it and have it your way.
