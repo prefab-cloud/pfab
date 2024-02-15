@@ -260,6 +260,20 @@ module Pfab
                     volumeMounts: volume_mounts
                   }.compact
                 ],
+                affinity:  {
+                  podAntiAffinity: {
+                    requiredDuringSchedulingIgnoredDuringExecution: [
+                      {
+                        topologyKey: "kubernetes.io/hostname",
+                        labelSelector: {
+                          matchLabels: {
+                            "deployed-name" => @data['deployed_name'],
+                          },
+                        },
+                      }
+                    ]
+                  }
+                },
                 volumes: volumes
               }.compact,
             },
