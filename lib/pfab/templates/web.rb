@@ -177,6 +177,48 @@ module Pfab
         }
         return pdb
       end
+      ANTI_AFFINITY_TYPES = %w[disabled required preferred]
+      ANTI_AFFINITY_MODE = 'antiAffinityMode'
+      ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'antiAffinityPreferredModeWeight'
+
+      def anti_affinity
+        if app_vars.has_key?(ANTI_AFFINITY_MODE)
+          antiAffinityMode = app_vars[ANTI_AFFINITY_MODE]
+          affinitySelector = {
+            topologyKey: "kubernetes.io/hostname",
+            labelSelector: {
+              matchLabels: {
+                "deployed-name" => @data['deployed_name'],
+              },
+            },
+          }
+
+          return case antiAffinityMode
+                 when "disabled"
+                   puts "antiAffinityMode is set to disabled, skipping"
+                   {}
+                 when "required"
+                   {
+                     podAntiAffinity: {
+                       requiredDuringSchedulingIgnoredDuringExecution: [
+                         affinitySelector
+                       ] } }
+                 when "preferred"
+                   { podAntiAffinity: {
+                     preferredDuringSchedulingIgnoredDuringExecution: [
+                       {
+                         weight: app_vars[ANTI_AFFINITY_PREFERRED_MODE_WEIGHT] || 100,
+                         podAffinityTerm: affinitySelector
+                       }
+                     ]
+                   }
+                   }
+                 else
+                   raise "Unexpected value #{antiAffinityMode} specified for `#{ANTI_AFFINITY_MODE}`. Valid selections are #{ANTI_AFFINITY_TYPES}"
+                 end
+        end
+        return {}
+      end
 
       def deployment
         secret_mounts = get("secretMounts") || []
@@ -283,25 +325,12 @@ module Pfab
                     volumeMounts: volume_mounts
                   }.compact
                 ],
-                affinity:  {
-                  podAntiAffinity: {
-                    requiredDuringSchedulingIgnoredDuringExecution: [
-                      {
-                        topologyKey: "kubernetes.io/hostname",
-                        labelSelector: {
-                          matchLabels: {
-                            "deployed-name" => @data['deployed_name'],
-                          },
-                        },
-                      }
-                    ]
-                  }
-                },
+                affinity:  anti_affinity,
                 volumes: volumes
               }.compact,
             },
           }.compact,
-        }
+        }.compact
       end
     end
   end
