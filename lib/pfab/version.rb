@@ -1,7 +1,7 @@
 module Pfab
   module Version
     MAJOR = 0
-    MINOR = 48
+    MINOR = 49
     PATCH = 0
     BUILD = nil
 
