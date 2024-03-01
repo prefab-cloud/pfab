@@ -14,6 +14,7 @@ module Pfab
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
           end
           f << StyledYAML.dump(deployment.deep_stringify_keys)
+          f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
         end
       end
 
@@ -153,6 +154,28 @@ module Pfab
 
       def application_type
         "web"
+      end
+
+      def pod_disruption_budget
+        pdb = {
+          apiVersion: "policy/v1",
+          kind: "PodDisruptionBudget",
+          metadata:  {
+            name: "#{@data['deployed_name']}-pdb",
+            namespace: get_namespace()
+          },
+          spec: {
+            minAvailable: 1,
+            selector: {
+            matchLabels: {
+              application: @data['application'],
+              "deployed-name" => @data['deployed_name'],
+              "application-type" => application_type
+              }
+            }
+          }
+        }
+        return pdb
       end
 
       def deployment
