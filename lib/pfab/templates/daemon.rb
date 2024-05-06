@@ -58,6 +58,7 @@ module Pfab
                     env: env_vars,
                     envFrom: env_from,
                     resources: resources,
+                    ports: container_ports()
                   }
                 ]
               }.compact,

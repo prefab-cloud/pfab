@@ -125,6 +125,28 @@ module Pfab
             } }
         end
       end
+
+
+      def container_ports
+        ports = []
+        if app_vars["port"]
+          ports.append ({
+            name: "main",
+            containerPort: app_vars["port"]
+          })
+        end
+        %w[additionalPorts containerPorts].each do |key|
+          if get(key)
+            get(key).each do |name, number|
+              ports.append(
+                {name: name, containerPort: number}
+              )
+            end
+          end
+        end
+
+        return ports
+      end
     end
   end
 end

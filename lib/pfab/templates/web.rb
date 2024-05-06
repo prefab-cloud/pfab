@@ -251,17 +251,7 @@ module Pfab
             readOnly: true
           )
         end
-        ports = [  {
-                     name: "main",
-                     containerPort: app_vars["port"]
-                   }]
-        if get("additionalPorts")
-          get("additionalPorts").each do |name, number|
-            ports.append(
-              {name: name, containerPort: number}
-            )
-          end
-        end
+        ports = container_ports()
 
         {
           kind: "Deployment",
