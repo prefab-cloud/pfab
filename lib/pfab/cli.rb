@@ -106,18 +106,20 @@ module Pfab
 
       command :exec do |c|
         c.option "-c", "--command command", "use with exec to run a command and exit. default is /bin/sh"
-        c.syntax = "pfab exec"
+        c.syntax = "pfab exec [-- command to execute]'"
         c.summary = "kubectl exec into a  pod"
         c.description = "CLI to the Cloud"
         c.example "exec into the first pod in staging",
-                  "pfab exec"
+                  "pfab -e staging exec"
         c.example "exec into the first pod in production",
-                  "ezp -p exec"
+                  "pfab -p exec"
         c.action do |args, options|
           set_kube_context
+          # Access the command line input after "--"
+          additional_args = ARGV[ARGV.index('--') + 1..-1] if ARGV.include?('--')
           app_name = get_app_name
           first_pod = get_first_pod app_name
-          kubectl "exec -it #{first_pod}", "-- #{options.command || '/bin/sh'}"
+          kubectl "exec -it #{first_pod}", "-- #{additional_args.join(" ") || options.command || '/bin/sh'}"
         end
       end
 
