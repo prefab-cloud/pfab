@@ -180,12 +180,64 @@ module Pfab
       ANTI_AFFINITY_TYPES = %w[disabled required preferred]
       ANTI_AFFINITY_MODE = 'antiAffinityMode'
       ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'antiAffinityPreferredModeWeight'
+      ZONE_ANTI_AFFINITY_MODE = 'zoneAntiAffinityMode'
+      ZONE_ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'zoneAntiAffinityPreferredModeWeight'
+
 
       def anti_affinity
-        if app_vars.has_key?(ANTI_AFFINITY_MODE)
-          antiAffinityMode = app_vars[ANTI_AFFINITY_MODE]
+        p = host_anti_affinity
+        z = zone_anti_affinity
+        printf("host anti affinity: %s\n", p)
+        printf("zone anti affinity: %s\n", z)
+        m =  merge_anti_affinity(p, z)
+        printf("merged anti affinity: %s\n", m)
+        return m
+      end
+
+
+      def host_anti_affinity
+        anti_affinity_builder(ANTI_AFFINITY_MODE, ANTI_AFFINITY_PREFERRED_MODE_WEIGHT, "kubernetes.io/hostname")
+      end
+
+      def zone_anti_affinity
+        anti_affinity_builder(ZONE_ANTI_AFFINITY_MODE, ZONE_ANTI_AFFINITY_PREFERRED_MODE_WEIGHT, "topology.kubernetes.io/zone")
+      end
+
+      def merge_anti_affinity(pod_anti_affinity, zone_anti_affinity)
+        merged = {}
+
+        if pod_anti_affinity.empty? && zone_anti_affinity.empty?
+          merged = {}
+        elsif pod_anti_affinity.empty?
+          merged = zone_anti_affinity
+        elsif zone_anti_affinity.empty?
+          merged = pod_anti_affinity
+        else
+          merged[:podAntiAffinity] = {}
+
+          required_key = :requiredDuringSchedulingIgnoredDuringExecution
+          preferred_key = :preferredDuringSchedulingIgnoredDuringExecution
+
+          [required_key, preferred_key].each do |key|
+            if pod_anti_affinity.dig(:podAntiAffinity, key) && zone_anti_affinity.dig(:podAntiAffinity, key)
+              merged[:podAntiAffinity][key] = pod_anti_affinity[:podAntiAffinity][key] + zone_anti_affinity[:podAntiAffinity][key]
+            elsif pod_anti_affinity.dig(:podAntiAffinity, key)
+              merged[:podAntiAffinity][key] = pod_anti_affinity[:podAntiAffinity][key]
+            elsif zone_anti_affinity.dig(:podAntiAffinity, key)
+              merged[:podAntiAffinity][key] = zone_anti_affinity[:podAntiAffinity][key]
+            end
+          end
+        end
+
+        merged
+      end
+
+
+      def anti_affinity_builder(key, weight_key, topology_key)
+        antiAffinityMode = get(key) || "disabled"
+        if antiAffinityMode
           affinitySelector = {
-            topologyKey: "kubernetes.io/hostname",
+            topologyKey: topology_key,
             labelSelector: {
               matchLabels: {
                 "deployed-name" => @data['deployed_name'],
@@ -207,14 +259,14 @@ module Pfab
                    { podAntiAffinity: {
                      preferredDuringSchedulingIgnoredDuringExecution: [
                        {
-                         weight: app_vars[ANTI_AFFINITY_PREFERRED_MODE_WEIGHT] || 100,
+                         weight: app_vars[weight_key] || 100,
                          podAffinityTerm: affinitySelector
                        }
                      ]
                    }
                    }
                  else
-                   raise "Unexpected value #{antiAffinityMode} specified for `#{ANTI_AFFINITY_MODE}`. Valid selections are #{ANTI_AFFINITY_TYPES}"
+                   raise "Unexpected value #{antiAffinityMode} specified for `#{key}`. Valid selections are #{ANTI_AFFINITY_TYPES}"
                  end
         end
         return {}
