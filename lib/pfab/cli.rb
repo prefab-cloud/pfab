@@ -4,6 +4,7 @@ require "yaml"
 require "json"
 require 'active_support/core_ext/hash/indifferent_access'
 require 'styled_yaml'
+require 'digest'
 
 module Pfab
   class CLI
@@ -16,6 +17,7 @@ module Pfab
 
       if File.exist? "application.yaml"
         @application_yaml = YAML.load(File.read("application.yaml")).with_indifferent_access
+        @application_yaml_hash = Digest::SHA256.hexdigest(@application_yaml.to_json)
       else
         raise "I need to be run in a directory with a application.yaml"
       end
@@ -291,6 +293,7 @@ module Pfab
     def yy
       Pfab::Yamls.new(apps: all_runnables,
                       application_yaml: @application_yaml,
+                      application_yaml_hash: @application_yaml_hash,
                       env: $env,
                       sha: get_current_sha,
                       image_name: image_name,

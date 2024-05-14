@@ -1,3 +1,5 @@
+require 'securerandom'
+
 module Pfab
   module Templates
     class Base
@@ -61,6 +63,10 @@ module Pfab
 
       def deploy_id
         "#{@data['application']}.#{application_type}.#{@data['deployed_name']}"
+      end
+
+      def deploy_unique_id
+        @data['sha'] + "-" + @data['application_yaml_hash'][0,8]
       end
 
       def env_from

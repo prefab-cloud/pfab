@@ -2,7 +2,7 @@ require 'pry'
 module Pfab
   class Yamls
 
-    def initialize(apps:, application_yaml:, image_name:, env:, sha:, config:)
+    def initialize(apps:, application_yaml:, image_name:, env:, sha:, config:, application_yaml_hash:)
       @apps = apps
       namespace = application_yaml.dig(env.to_s, "namespace") || application_yaml["namespace"]
       raise "No namespace founds" unless namespace
@@ -15,6 +15,7 @@ module Pfab
         'application' => application_yaml["name"],
         'application_yaml' => application_yaml,
         'namespace' => namespace,
+        'application_yaml_hash' => application_yaml_hash
       }
     end
 

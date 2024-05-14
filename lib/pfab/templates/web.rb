@@ -187,10 +187,7 @@ module Pfab
       def anti_affinity
         p = host_anti_affinity
         z = zone_anti_affinity
-        printf("host anti affinity: %s\n", p)
-        printf("zone anti affinity: %s\n", z)
         m =  merge_anti_affinity(p, z)
-        printf("merged anti affinity: %s\n", m)
         return m
       end
 
@@ -239,9 +236,22 @@ module Pfab
           affinitySelector = {
             topologyKey: topology_key,
             labelSelector: {
-              matchLabels: {
-                "deployed-name" => @data['deployed_name'],
-              },
+              matchExpressions: [
+                {
+                  key: "deployed-name",
+                  operator: "In",
+                  values: [
+                    @data['deployed_name']
+                  ]
+                },
+                {
+                  key: "deployment-unique-id",
+                  operator: "In",
+                  values: [
+                    StyledYAML.double_quoted(deploy_unique_id)
+                  ]
+                }
+              ]
             },
           }
 
@@ -316,6 +326,7 @@ module Pfab
               "deployed-name" => @data['deployed_name'],
               "application-type" => application_type,
               "deploy-id" => deploy_id,
+              "deploy-unique-id" => StyledYAML.double_quoted(deploy_unique_id),
               "tags.datadoghq.com/env": @data['env'],
               "tags.datadoghq.com/service": @data['deployed_name'],
               "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
@@ -343,6 +354,7 @@ module Pfab
                   application: @data['application'],
                   "deployed-name" => @data['deployed_name'],
                   "application-type" => "web",
+                  "deploy-unique-id" => StyledYAML.double_quoted(deploy_unique_id),
                   "tags.datadoghq.com/env": @data['env'],
                   "tags.datadoghq.com/service": @data['deployed_name'],
                   "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
