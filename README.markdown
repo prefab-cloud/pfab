@@ -243,7 +243,7 @@ Releasing
 - ```bundle exec rake gemspec```
 - ```git commit ```
 - ```REMOTE_BRANCH=main LOCAL_BRANCH=main bundle exec rake git:release```
-- ```REMOTE_BRANCH=main LOCAL_BRANCH=main bundle exec rake build```
+- ```REMOTE_BRANCH=main LOCAL_BRANCH=main bundle exec rake clean build```
 - ```gem push pkg/pfab-0.45.0.gem```
 
 Copyright
