@@ -187,10 +187,7 @@ module Pfab
 
 
       def anti_affinity
-        p = host_anti_affinity
-        z = zone_anti_affinity
-        m =  merge_anti_affinity(p, z)
-        return m
+        return host_anti_affinity
       end
 
 
@@ -198,63 +195,57 @@ module Pfab
         anti_affinity_builder(ANTI_AFFINITY_MODE, ANTI_AFFINITY_PREFERRED_MODE_WEIGHT, "kubernetes.io/hostname")
       end
 
-      def zone_anti_affinity
-        anti_affinity_builder(ZONE_ANTI_AFFINITY_MODE, ZONE_ANTI_AFFINITY_PREFERRED_MODE_WEIGHT, "topology.kubernetes.io/zone")
+
+      def topology_spread_constraints
+        waiveTopologySpreadConstraints = get("waiveTopologySpreadConstraints") || false
+
+        schedulingRule = waiveTopologySpreadConstraints ? "ScheduleAnyway" : "DoNotSchedule"
+
+        zone_constraint = {
+          maxSkew: 1,
+          topologyKey: "topology.kubernetes.io/zone",
+          whenUnsatisfiable: schedulingRule,
+          labelSelector: labelSelector
+        }
+        host_constraint = {
+          maxSkew: 1,
+          topologyKey: "kubernetes.io/hostname",
+          whenUnsatisfiable: schedulingRule,
+          labelSelector: labelSelector
+
+        }
+        [zone_constraint, host_constraint]
       end
 
-      def merge_anti_affinity(pod_anti_affinity, zone_anti_affinity)
-        merged = {}
 
-        if pod_anti_affinity.empty? && zone_anti_affinity.empty?
-          merged = {}
-        elsif pod_anti_affinity.empty?
-          merged = zone_anti_affinity
-        elsif zone_anti_affinity.empty?
-          merged = pod_anti_affinity
-        else
-          merged[:podAntiAffinity] = {}
 
-          required_key = :requiredDuringSchedulingIgnoredDuringExecution
-          preferred_key = :preferredDuringSchedulingIgnoredDuringExecution
-
-          [required_key, preferred_key].each do |key|
-            if pod_anti_affinity.dig(:podAntiAffinity, key) && zone_anti_affinity.dig(:podAntiAffinity, key)
-              merged[:podAntiAffinity][key] = pod_anti_affinity[:podAntiAffinity][key] + zone_anti_affinity[:podAntiAffinity][key]
-            elsif pod_anti_affinity.dig(:podAntiAffinity, key)
-              merged[:podAntiAffinity][key] = pod_anti_affinity[:podAntiAffinity][key]
-            elsif zone_anti_affinity.dig(:podAntiAffinity, key)
-              merged[:podAntiAffinity][key] = zone_anti_affinity[:podAntiAffinity][key]
-            end
-          end
-        end
-
-        merged
+      def labelSelector
+        {
+          matchExpressions: [
+          {
+            key: "deployed-name",
+            operator: "In",
+            values: [
+              @data['deployed_name']
+            ]
+          },
+          {
+            key: "deployment-unique-id",
+            operator: "In",
+            values: [
+              StyledYAML.double_quoted(deploy_unique_id)
+            ]
+          }
+        ]
+        }
       end
-
 
       def anti_affinity_builder(key, weight_key, topology_key)
         antiAffinityMode = get(key) || "disabled"
         if antiAffinityMode
           affinitySelector = {
             topologyKey: topology_key,
-            labelSelector: {
-              matchExpressions: [
-                {
-                  key: "deployed-name",
-                  operator: "In",
-                  values: [
-                    @data['deployed_name']
-                  ]
-                },
-                {
-                  key: "deployment-unique-id",
-                  operator: "In",
-                  values: [
-                    StyledYAML.double_quoted(deploy_unique_id)
-                  ]
-                }
-              ]
-            },
+            labelSelector: labelSelector,
           }
 
           return case antiAffinityMode
@@ -381,7 +372,7 @@ module Pfab
                     volumeMounts: volume_mounts
                   }.compact
                 ],
-                affinity:  anti_affinity,
+                topologySpreadConstraints: topology_spread_constraints,
                 volumes: volumes
               }.compact,
             },
