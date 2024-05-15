@@ -1,6 +1,7 @@
 require "rubygems/safe_yaml"
 
 module Pfab
+  LABEL_DEPLOY_UNIQUE_ID = "deploy-unique-id"
   module Templates
     class Web < Base
       def write_to(f)
@@ -230,7 +231,7 @@ module Pfab
             ]
           },
           {
-            key: "deployment-unique-id",
+            key: LABEL_DEPLOY_UNIQUE_ID,
             operator: "In",
             values: [
               StyledYAML.double_quoted(deploy_unique_id)
@@ -319,7 +320,7 @@ module Pfab
               "deployed-name" => @data['deployed_name'],
               "application-type" => application_type,
               "deploy-id" => deploy_id,
-              "deploy-unique-id" => StyledYAML.double_quoted(deploy_unique_id),
+              LABEL_DEPLOY_UNIQUE_ID: StyledYAML.double_quoted(deploy_unique_id),
               "tags.datadoghq.com/env": @data['env'],
               "tags.datadoghq.com/service": @data['deployed_name'],
               "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
@@ -347,7 +348,7 @@ module Pfab
                   application: @data['application'],
                   "deployed-name" => @data['deployed_name'],
                   "application-type" => "web",
-                  "deploy-unique-id" => StyledYAML.double_quoted(deploy_unique_id),
+                  LABEL_DEPLOY_UNIQUE_ID => StyledYAML.double_quoted(deploy_unique_id),
                   "tags.datadoghq.com/env": @data['env'],
                   "tags.datadoghq.com/service": @data['deployed_name'],
                   "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
