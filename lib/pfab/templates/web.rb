@@ -15,7 +15,8 @@ module Pfab
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
           end
           f << StyledYAML.dump(deployment.deep_stringify_keys)
-          if get("replicas") || 1 > 1
+          replica_count = get("replicas") ||1
+          if (replica_count > 1)
             f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
           end
         end
