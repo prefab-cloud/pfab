@@ -62,7 +62,7 @@ module Pfab
       end
 
       def deploy_id
-        "#{@data['application']}.#{application_type}.#{@data['deployed_name']}"
+        @data['deployed_name']
       end
 
       def deploy_unique_id
