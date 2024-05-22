@@ -41,7 +41,7 @@ module Pfab
             ports: [
               {
                 name: "http",
-                port: 80,
+                port: app_vars["service_listen_port"] || 80,
                 targetPort: app_vars["port"],
                 appProtocol: app_vars["appProtocol"]
               }.compact
