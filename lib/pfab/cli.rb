@@ -121,7 +121,7 @@ module Pfab
           additional_args = ARGV[ARGV.index('--') + 1..-1] if ARGV.include?('--')
           app_name = get_app_name
           first_pod = get_first_pod app_name
-          kubectl "exec -it #{first_pod}", "-- #{additional_args.join(" ") || options.command || '/bin/sh'}"
+          kubectl "exec -it #{first_pod}", "-- #{additional_args ? additional_args.join(' ') : (options.command || '/bin/sh')}"
         end
       end
 
