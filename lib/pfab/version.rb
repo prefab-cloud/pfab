@@ -1,8 +1,8 @@
 module Pfab
   module Version
     MAJOR = 0
-    MINOR = 54
-    PATCH = 1
+    MINOR = 55
+    PATCH = 0
     BUILD = nil
 
     STRING = [MAJOR, MINOR, PATCH, BUILD].compact.join('.')
