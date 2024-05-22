@@ -5,11 +5,11 @@ module Pfab
   module Templates
     class Web < Base
       def write_to(f)
-        if get("host").nil?
-          puts "No host to deploy to for #{@data['deployed_name']}. Skipping."
+        if ingres_enabled? && get("host").nil?
+          puts "No host to configure ingress for #{@data['deployed_name']}. Skipping deployment. add a host or generateIngressEnabled:false"
         else
           f << StyledYAML.dump(service.deep_stringify_keys)
-          if not app_vars.has_key?('generateIngressEnabled') || app_vars['generateIngressEnabled']
+          if ingres_enabled?
             f << StyledYAML.dump(ingress.deep_stringify_keys)
           else
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
@@ -20,6 +20,13 @@ module Pfab
             f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
           end
         end
+      end
+
+      def ingres_enabled?
+        if not app_vars.has_key?('generateIngressEnabled') || app_vars['generateIngressEnabled']
+          return true
+        end
+        return false
       end
 
       def service
