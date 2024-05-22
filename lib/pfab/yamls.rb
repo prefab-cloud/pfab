@@ -24,6 +24,11 @@ module Pfab
       template.env_vars
     end
 
+    def env_from(app)
+      template = Pfab::Templates::Base.new(data_for(app, @apps[app]))
+      template.env_from
+    end
+
     def data_for(app, props)
       data = @base_data.clone
       data['props'] = props
