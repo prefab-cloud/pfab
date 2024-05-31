@@ -80,7 +80,8 @@ module Pfab
 
       def env_vars
         env_vars = { "DEPLOYED_NAME" => { value: @data['deployed_name'] },
-                     "DEPLOY_ID" => { value: deploy_id },
+                     "DEPLOY_ID" => { value: deploy_id }, # currently this is the same as deployed_name
+                     "DEPLOY_FAMILY" => { value: @data['application'] },
                      "POD_ID" => { valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } },
                      "SPEC_NODENAME" => { valueFrom: { fieldRef: { fieldPath: 'spec.nodeName' } } },
                      "DD_ENV" => { valueFrom: { fieldRef: { fieldPath: "metadata.labels['tags.datadoghq.com/env']" } } },
