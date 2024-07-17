@@ -1,6 +1,6 @@
 module Pfab
   module Templates
-    class Daemon < Base
+    class Daemon < LongRunningProcess
       def write_to(f)
         f << StyledYAML.dump(deployment.deep_stringify_keys)
       end
@@ -33,9 +33,7 @@ module Pfab
                 "deployed-name" => @data['deployed_name'],
               },
             },
-            strategy: {
-              type: "Recreate"
-            },
+            strategy: rolling_update_strategy(),
             revisionHistoryLimit: 5,
             template: {
               metadata: {
@@ -59,7 +57,7 @@ module Pfab
                     envFrom: env_from,
                     resources: resources,
                     ports: container_ports()
-                  }
+                  }.merge(probes()).compact
                 ]
               }.compact,
             },
