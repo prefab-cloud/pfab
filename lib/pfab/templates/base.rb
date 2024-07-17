@@ -95,7 +95,14 @@ module Pfab
 
         # load env overrides
         load_env_vars(env_vars, @data.dig("application_yaml", @data["env"], :environment))
-        load_secrets(env_vars, @data.dig("application_yaml", @data["env"], :env_secrets))
+
+        #load more env overrides first at app
+        load_env_vars(env_vars, app_vars[:environment])
+        load_secrets(env_vars, app_vars[:env_secrets])
+        #  then app/environment
+        load_env_vars(env_vars, app_vars.dig(@data["env"], :environment))
+        load_secrets(env_vars, app_vars.dig(@data["env"], :env_secrets))
+
 
         env_vars.map do |k, v|
           { name: k }.merge(v)
