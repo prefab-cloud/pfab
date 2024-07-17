@@ -3,7 +3,7 @@ require "rubygems/safe_yaml"
 module Pfab
   LABEL_DEPLOY_UNIQUE_ID = "deploy-unique-id"
   module Templates
-    class Web < Base
+    class Web < LongRunningProcess
       def write_to(f)
         if ingres_enabled? && get("host").nil?
           puts "No host to configure ingress for #{@data['deployed_name']}. Skipping deployment. add a host or generateIngressEnabled:false"
@@ -136,32 +136,10 @@ module Pfab
         h
       end
 
-      def default_probe
-        {
-          httpGet: {
-            path: get("health_check_path") || "/",
-            port: get("port"),
-          },
-          initialDelaySeconds: 15,
-          timeoutSeconds: 3
-        }
-      end
-
-      def livenessProbe
-        get("livenessProbe") || default_probe
-      end
-
-      def readinessProbe
-        get("readinessProbe") || default_probe
-      end
-
-      def startupProbe
-        get("startupProbe") || default_probe
-      end
-
       def lifecycle
         get("lifecycle")
       end
+
 
       def application_type
         "web"
@@ -341,13 +319,7 @@ module Pfab
                 "deployed-name" => @data['deployed_name'],
               },
             },
-            strategy: {
-              type: "RollingUpdate",
-              rollingUpdate: {
-                maxSurge: 1,
-                maxUnavailable: 0,
-              }
-            },
+            strategy: rolling_update_strategy(),
             revisionHistoryLimit: 5,
             progressDeadlineSeconds: 120,
             template: {
@@ -374,12 +346,9 @@ module Pfab
                     envFrom: env_from,
                     resources: resources,
                     ports: ports,
-                    livenessProbe: livenessProbe,
-                    readinessProbe: readinessProbe,
-                    startupProbe: startupProbe,
                     lifecycle: lifecycle,
                     volumeMounts: volume_mounts
-                  }.compact
+                  }.merge(probes()).compact
                 ],
                 topologySpreadConstraints: topology_spread_constraints,
                 volumes: volumes
