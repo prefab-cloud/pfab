@@ -65,13 +65,16 @@ module Pfab
       command :shipit do |c|
         c.syntax = "pfab shipit"
         c.summary = "build, generate, apply"
+        c.option "-t", "--timeout timeout", "timeout for rollout (default 240s)"
+
         c.action do
+          options.default :timeout => 240
           app_name = get_app_name(all: true)
           puts "Shipping #{app_name}"
           success = cmd_build
           if success
             cmd_generate_yaml
-            cmd_apply
+            cmd_apply(timeout: options.timeout)
           end
         end
       end
@@ -204,7 +207,7 @@ module Pfab
       run!
     end
 
-    def cmd_apply
+    def cmd_apply(timeout: 240)
       set_kube_context
       success = true
 
@@ -221,16 +224,31 @@ module Pfab
 
       selector = "application=#{@application_yaml['name']}"
       
-      # Get the deployment for the given selector
+      # Get all deployments for the given selector
       deployment_json = `kubectl get deployment -l #{selector} -o json --namespace=#{yy.namespace}`
-      deployment = JSON.parse(deployment_json)
+      deployments = JSON.parse(deployment_json)
       
-      if deployment["items"].any?
-        deployment_name = deployment["items"].first["metadata"]["name"]
-        success &= kubectl("rollout status deployment/#{deployment_name} --timeout=60s")
+      if deployments["items"].any?
+        deployments["items"].each do |deployment|
+          deployment_name = deployment["metadata"]["name"]
+          puts "Waiting for deployment #{deployment_name} to roll out..."
+          rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
+          if rollout_success
+            puts "Deployment #{deployment_name} successfully rolled out."
+          else
+            puts "Deployment #{deployment_name} failed to roll out within the specified timeout."
+          end
+          success &= rollout_success
+        end
       else
-        puts "No deployment found for selector: #{selector}"
+        puts "No deployments found for selector: #{selector}"
         success = false
+      end
+
+      if success
+        puts "All deployments successfully rolled out."
+      else
+        puts "One or more deployments failed to roll out successfully."
       end
 
       exit(success ? 0 : 1)
