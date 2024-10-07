@@ -33,7 +33,7 @@ module Pfab
                 "deployed-name" => @data['deployed_name'],
               },
             },
-            strategy: rolling_update_strategy(),
+            strategy: rolling_update_strategy,
             revisionHistoryLimit: 5,
             template: {
               metadata: {

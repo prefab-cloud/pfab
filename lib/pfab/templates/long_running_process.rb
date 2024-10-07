@@ -44,12 +44,12 @@ module Pfab
       end
 
 
-      def rolling_update_strategy(max_surge=1,max_unavailable=0)
+      def rolling_update_strategy
         {
           type: "RollingUpdate",
           rollingUpdate: {
-            maxSurge: max_surge,
-            maxUnavailable: max_unavailable,
+            maxSurge: get("maxSurge") || 1,
+            maxUnavailable: get("maxUnavailable") || 0,
           }
         }
       end

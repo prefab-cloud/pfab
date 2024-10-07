@@ -65,10 +65,10 @@ module Pfab
       command :shipit do |c|
         c.syntax = "pfab shipit"
         c.summary = "build, generate, apply"
-        c.option "-t", "--timeout timeout", "timeout for rollout (default 240s)"
+        c.option "-t", "--timeout timeout", "timeout for rollout (default 360s)"
 
         c.action do |args, options|
-          options.default :timeout => 240
+          options.default :timeout => 360
           app_name = get_app_name(all: true)
           puts "Shipping #{app_name}"
           success = cmd_build
