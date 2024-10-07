@@ -67,7 +67,7 @@ module Pfab
         c.summary = "build, generate, apply"
         c.option "-t", "--timeout timeout", "timeout for rollout (default 240s)"
 
-        c.action do
+        c.action do |args, options|
           options.default :timeout => 240
           app_name = get_app_name(all: true)
           puts "Shipping #{app_name}"
