@@ -206,18 +206,34 @@ module Pfab
 
     def cmd_apply
       set_kube_context
+      success = true
+
       get_apps.each do |app_name|
         app = deployables[app_name]
         if app[:deployable_type] == "cron"
           deployed_name = deployed_name(app)
-          kubectl("delete cronjob -l deployed-name=#{deployed_name}")
+          success &= kubectl("delete cronjob -l deployed-name=#{deployed_name}")
         end
-        kubectl("apply -f .application-k8s-#{$env}-#{app_name}.yaml")
-        puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
-        puts_and_system("git push origin --tags")
+        success &= kubectl("apply -f .application-k8s-#{$env}-#{app_name}.yaml")
+        success &= puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
+        success &= puts_and_system("git push origin --tags")
       end
+
       selector = "application=#{@application_yaml['name']}"
-      kubectl "get pods -l #{selector} -w"
+      
+      # Get the deployment for the given selector
+      deployment_json = `kubectl get deployment -l #{selector} -o json --namespace=#{yy.namespace}`
+      deployment = JSON.parse(deployment_json)
+      
+      if deployment["items"].any?
+        deployment_name = deployment["items"].first["metadata"]["name"]
+        success &= kubectl("rollout status deployment/#{deployment_name} --timeout=60s")
+      else
+        puts "No deployment found for selector: #{selector}"
+        success = false
+      end
+
+      exit(success ? 0 : 1)
     end
 
     def image_exists?(full_image_name)
@@ -339,16 +355,18 @@ module Pfab
       @_config ||= YAML.load(File.read(File.join(Dir.home, ".pfab.yaml")))
     end
 
-    def kubectl cmd, post_cmd = ""
-      puts_and_system "kubectl #{cmd} --namespace=#{yy.namespace} #{post_cmd}"
+    def kubectl(cmd, post_cmd = "")
+      result = puts_and_system("kubectl #{cmd} --namespace=#{yy.namespace} #{post_cmd}")
+      result == true
     end
 
-    def puts_and_system cmd
+    def puts_and_system(cmd)
       puts cmd
       if $dryrun
         puts "dry run, didn't run that"
+        true
       else
-        system cmd
+        system(cmd)
       end
     end
 

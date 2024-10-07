@@ -230,7 +230,7 @@ Local Testing
 -----------------------------------------
 ```bash
 bundle exec rake build
-gem install --local pkg/pfab-0.44.0.gem
+gem install --local pkg/pfab-0.57.1.gem
 ```
 ```ruby
 gem 'pfab', :path => "../pfab"
