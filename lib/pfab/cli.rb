@@ -238,6 +238,8 @@ module Pfab
         deployments["items"].each do |deployment|
           deployment_name = deployment["metadata"]["name"]
           puts "Waiting for deployment #{deployment_name} to roll out..."
+
+          rollout_success = false
           
           retries.times do |attempt|
             rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
