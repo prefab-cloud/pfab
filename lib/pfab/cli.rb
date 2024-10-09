@@ -241,7 +241,6 @@ module Pfab
           
           retries.times do |attempt|
             rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
-            rollout_success = false
             if rollout_success
               puts "Deployment #{deployment_name} successfully rolled out. Attempt #{attempt + 1}/#{retries}."
               break
