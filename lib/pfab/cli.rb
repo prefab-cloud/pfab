@@ -65,16 +65,18 @@ module Pfab
       command :shipit do |c|
         c.syntax = "pfab shipit"
         c.summary = "build, generate, apply"
-        c.option "-t", "--timeout timeout", "timeout for rollout (default 360s)"
+        c.option "-t", "--timeout TIMEOUT", Integer, "timeout for rollout (default 360s)"
+        c.option "-r", "--retries RETRIES", Integer, "number of retries for rollout (default 3)"
+        c.option "-s", "--sleep SLEEP", Integer, "sleep duration between retries in seconds (default 5)"
 
         c.action do |args, options|
-          options.default :timeout => 360
+          options.default timeout: 360, retries: 3, sleep: 5
           app_name = get_app_name(all: true)
           puts "Shipping #{app_name}"
           success = cmd_build
           if success
             cmd_generate_yaml
-            cmd_apply(timeout: options.timeout)
+            cmd_apply(timeout: options.timeout, retries: options.retries, sleep_duration: options.sleep)
           end
         end
       end
@@ -207,7 +209,7 @@ module Pfab
       run!
     end
 
-    def cmd_apply(timeout: 240)
+    def cmd_apply(timeout: 240, retries: 3, sleep_duration: 5)
       set_kube_context
       success = true
 
@@ -222,9 +224,13 @@ module Pfab
         success &= puts_and_system("git push origin --tags")
       end
 
+      success &= wait_for_deployments_rollout(timeout, retries: retries, sleep_duration: sleep_duration)
+
+      exit(success ? 0 : 1)
+    end
+
+    def wait_for_deployments_rollout(timeout, retries: 3, sleep_duration: 5)
       selector = "application=#{@application_yaml['name']}"
-      
-      # Get all deployments for the given selector
       deployment_json = `kubectl get deployment -l #{selector} -o json --namespace=#{yy.namespace}`
       deployments = JSON.parse(deployment_json)
       
@@ -232,26 +238,33 @@ module Pfab
         deployments["items"].each do |deployment|
           deployment_name = deployment["metadata"]["name"]
           puts "Waiting for deployment #{deployment_name} to roll out..."
-          rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
-          if rollout_success
-            puts "Deployment #{deployment_name} successfully rolled out."
-          else
-            puts "Deployment #{deployment_name} failed to roll out within the specified timeout."
+          
+          retries.times do |attempt|
+            rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
+            rollout_success = false
+            if rollout_success
+              puts "Deployment #{deployment_name} successfully rolled out. Attempt #{attempt + 1}/#{retries}."
+              break
+            else
+              puts "Attempt #{attempt + 1}/#{retries}: Deployment #{deployment_name} failed to roll out within the specified timeout."
+              if attempt < retries - 1
+                puts "Retrying in #{sleep_duration} seconds..."
+                sleep(sleep_duration)
+              end
+            end
           end
-          success &= rollout_success
+          
+          unless rollout_success
+            puts "Deployment #{deployment_name} failed to roll out after #{retries} attempts."
+            return false
+          end
         end
+        puts "All deployments successfully rolled out."
+        true
       else
         puts "No deployments found for selector: #{selector}"
-        success = false
+        false
       end
-
-      if success
-        puts "All deployments successfully rolled out."
-      else
-        puts "One or more deployments failed to roll out successfully."
-      end
-
-      exit(success ? 0 : 1)
     end
 
     def image_exists?(full_image_name)
