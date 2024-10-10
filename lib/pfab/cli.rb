@@ -68,15 +68,22 @@ module Pfab
         c.option "-t", "--timeout TIMEOUT", Integer, "timeout for rollout (default 360s)"
         c.option "-r", "--retries RETRIES", Integer, "number of retries for rollout (default 3)"
         c.option "-s", "--sleep SLEEP", Integer, "sleep duration between retries in seconds (default 5)"
+        c.option "-g", "--tagged TAGGED", String, "target deployables tagged with TAGGED"
 
         c.action do |args, options|
           options.default timeout: 360, retries: 3, sleep: 5
-          app_name = get_app_name(all: true)
+          app_name = ""
+          if options.tagged && options.tagged != ""
+            app_name = "Apps tagged with #{options.tagged}"
+          else
+            app_name = get_app_name(all: true)
+          end
+
           puts "Shipping #{app_name}"
           success = cmd_build
           if success
             cmd_generate_yaml
-            cmd_apply(timeout: options.timeout, retries: options.retries, sleep_duration: options.sleep)
+            cmd_apply(timeout: options.timeout, retries: options.retries, sleep_duration: options.sleep, tagged: options.tagged)
           end
         end
       end
@@ -209,11 +216,13 @@ module Pfab
       run!
     end
 
-    def cmd_apply(timeout: 240, retries: 3, sleep_duration: 5)
+    def cmd_apply(timeout: 240, retries: 3, sleep_duration: 5, tagged: nil)
       set_kube_context
       success = true
 
-      get_apps.each do |app_name|
+      apps = tagged ? deployables.select { |k, v| v[:tags]&.include?(tagged) }.keys : get_apps
+
+      apps.each do |app_name|
         app = deployables[app_name]
         if app[:deployable_type] == "cron"
           deployed_name = deployed_name(app)
@@ -233,14 +242,14 @@ module Pfab
       selector = "application=#{@application_yaml['name']}"
       deployment_json = `kubectl get deployment -l #{selector} -o json --namespace=#{yy.namespace}`
       deployments = JSON.parse(deployment_json)
-      
+
       if deployments["items"].any?
         deployments["items"].each do |deployment|
           deployment_name = deployment["metadata"]["name"]
           puts "Waiting for deployment #{deployment_name} to roll out..."
 
           rollout_success = false
-          
+
           retries.times do |attempt|
             rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
             if rollout_success
@@ -254,7 +263,7 @@ module Pfab
               end
             end
           end
-          
+
           unless rollout_success
             puts "Deployment #{deployment_name} failed to roll out after #{retries} attempts."
             return false
@@ -424,6 +433,7 @@ module Pfab
           application: application,
           deployable: deployable,
           deployable_type: deployable_type,
+          tags: dep["tags"],
           command: dep["command"],
         }
       end
