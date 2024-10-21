@@ -5,6 +5,7 @@ require "json"
 require 'active_support/core_ext/hash/indifferent_access'
 require 'styled_yaml'
 require 'digest'
+require 'open3'
 
 module Pfab
   class CLI
@@ -251,12 +252,14 @@ module Pfab
           rollout_success = false
 
           retries.times do |attempt|
-            rollout_success = kubectl("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
+            rollout_result = kubectl_with_output("rollout status deployment/#{deployment_name} --timeout=#{timeout}s")
+            rollout_success = rollout_result.success?
             if rollout_success
               puts "Deployment #{deployment_name} successfully rolled out. Attempt #{attempt + 1}/#{retries}."
               break
             else
               puts "Attempt #{attempt + 1}/#{retries}: Deployment #{deployment_name} failed to roll out within the specified timeout."
+              puts "Output was #{rollout_result}"
               if attempt < retries - 1
                 puts "Retrying in #{sleep_duration} seconds..."
                 sleep(sleep_duration)
@@ -401,6 +404,10 @@ module Pfab
       result == true
     end
 
+    def kubectl_with_output(cmd, post_cmd = "")
+      puts_and_system_with_output("kubectl #{cmd} --namespace=#{yy.namespace} #{post_cmd}")
+    end
+
     def puts_and_system(cmd)
       puts cmd
       if $dryrun
@@ -408,6 +415,18 @@ module Pfab
         true
       else
         system(cmd)
+      end
+    end
+
+    def puts_and_system_with_output(cmd)
+      puts cmd
+      if $dryrun
+        dryrun_message = "dry run, didn't run that"
+        puts dryrun_message
+        CommandResult.new(stdout: dryrun_message, stderr: dryrun_message, exit_status_code: 0)
+      else
+        stdout, stderr, status = Open3.capture3(cmd)
+        CommandResult.new(stdout: stdout, stderr: stderr, exit_status_code: status.exitstatus)
       end
     end
 
@@ -464,6 +483,16 @@ module Pfab
     def get_apps
       name = get_app_name(all: true)
       (name == "all") ? deployables.keys : [name]
+    end
+  end
+
+  CommandResult = Struct.new(:stdout, :stderr, :exit_status_code, keyword_init: true) do
+    def success?
+      exit_status_code == 0
+    end
+
+    def to_s
+      "status: #{status.exitstatus}\n\nstdout: #{stdout}\n\nstderr: #{stderr}\n\n"
     end
   end
 end
