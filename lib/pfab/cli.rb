@@ -492,7 +492,7 @@ module Pfab
     end
 
     def to_s
-      "status: #{status.exitstatus}\n\nstdout: #{stdout}\n\nstderr: #{stderr}\n\n"
+      "status: #{exit_status_code}\n\nstdout: #{stdout}\n\nstderr: #{stderr}\n\n"
     end
   end
 end
