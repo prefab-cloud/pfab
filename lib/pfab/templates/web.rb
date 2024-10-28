@@ -321,7 +321,7 @@ module Pfab
             },
             strategy: rolling_update_strategy,
             revisionHistoryLimit: 5,
-            progressDeadlineSeconds: 120,
+            progressDeadlineSeconds: get("progressDeadlineSeconds") || 600,
             template: {
               metadata: {
                 labels: {
