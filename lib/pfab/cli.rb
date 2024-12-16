@@ -331,7 +331,7 @@ module Pfab
         end
       end
 
-      build_cmd = "docker buildx build -t #{image_name} --platform linux/amd64 #{build_args} ."
+      build_cmd = "docker buildx build --tag #{image_name} --platform linux/amd64 #{build_args} ."
       puts build_cmd
       result = system(build_cmd)
 
