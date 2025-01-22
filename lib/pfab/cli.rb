@@ -85,6 +85,8 @@ module Pfab
           if success
             cmd_generate_yaml
             cmd_apply(timeout: options.timeout, retries: options.retries, sleep_duration: options.sleep, tagged: options.tagged)
+          else
+            raise "Build failed"
           end
         end
       end
