@@ -4,6 +4,12 @@ module Pfab
   LABEL_DEPLOY_UNIQUE_ID = "deploy-unique-id"
   module Templates
     class Web < LongRunningProcess
+
+      def get_replica_count
+        raw_replicas = get("replicas")
+        raw_replicas ? raw_replicas.to_i : 1
+      end
+
       def write_to(f)
         if ingres_enabled? && get("host").nil?
           puts "No host to configure ingress for #{@data['deployed_name']}. Skipping deployment. add a host or generateIngressEnabled:false"
@@ -15,8 +21,7 @@ module Pfab
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
           end
           f << StyledYAML.dump(deployment.deep_stringify_keys)
-          replica_count = get("replicas") ||1
-          if (replica_count > 1)
+          if get_replica_count() > 1
             f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
           end
         end
@@ -166,21 +171,6 @@ module Pfab
         }
         return pdb
       end
-      ANTI_AFFINITY_TYPES = %w[disabled required preferred]
-      ANTI_AFFINITY_MODE = 'antiAffinityMode'
-      ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'antiAffinityPreferredModeWeight'
-      ZONE_ANTI_AFFINITY_MODE = 'zoneAntiAffinityMode'
-      ZONE_ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'zoneAntiAffinityPreferredModeWeight'
-
-
-      def anti_affinity
-        return host_anti_affinity
-      end
-
-
-      def host_anti_affinity
-        anti_affinity_builder(ANTI_AFFINITY_MODE, ANTI_AFFINITY_PREFERRED_MODE_WEIGHT, "kubernetes.io/hostname")
-      end
 
 
       def topology_spread_constraints
@@ -227,40 +217,6 @@ module Pfab
         }
       end
 
-      def anti_affinity_builder(key, weight_key, topology_key)
-        antiAffinityMode = get(key) || "disabled"
-        if antiAffinityMode
-          affinitySelector = {
-            topologyKey: topology_key,
-            labelSelector: labelSelector,
-          }
-
-          return case antiAffinityMode
-                 when "disabled"
-                   puts "antiAffinityMode is set to disabled, skipping"
-                   {}
-                 when "required"
-                   {
-                     podAntiAffinity: {
-                       requiredDuringSchedulingIgnoredDuringExecution: [
-                         affinitySelector
-                       ] } }
-                 when "preferred"
-                   { podAntiAffinity: {
-                     preferredDuringSchedulingIgnoredDuringExecution: [
-                       {
-                         weight: app_vars[weight_key] || 100,
-                         podAffinityTerm: affinitySelector
-                       }
-                     ]
-                   }
-                   }
-                 else
-                   raise "Unexpected value #{antiAffinityMode} specified for `#{key}`. Valid selections are #{ANTI_AFFINITY_TYPES}"
-                 end
-        end
-        return {}
-      end
 
       def deployment
         secret_mounts = get("secretMounts") || []
@@ -295,6 +251,7 @@ module Pfab
         end
         ports = container_ports()
 
+
         {
           kind: "Deployment",
           apiVersion: "apps/v1",
@@ -302,14 +259,14 @@ module Pfab
             name: @data['deployed_name'],
             namespace: get_namespace,
             labels: {
-              application: @data['application'],
+              "application" => @data['application'],
               "deployed-name" => @data['deployed_name'],
               "application-type" => application_type,
               "deploy-id" => deploy_id,
-              LABEL_DEPLOY_UNIQUE_ID: StyledYAML.double_quoted(deploy_unique_id),
-              "tags.datadoghq.com/env": @data['env'],
-              "tags.datadoghq.com/service": @data['deployed_name'],
-              "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
+              LABEL_DEPLOY_UNIQUE_ID => StyledYAML.double_quoted(deploy_unique_id),
+              "tags.datadoghq.com/env" => @data['env'],
+              "tags.datadoghq.com/service" => @data['deployed_name'],
+              "tags.datadoghq.com/version" => StyledYAML.double_quoted(@data['sha'])
             }
           },
           spec: {
@@ -350,7 +307,7 @@ module Pfab
                     volumeMounts: volume_mounts
                   }.merge(probes()).compact
                 ],
-                topologySpreadConstraints: topology_spread_constraints,
+                topologySpreadConstraints: get_replica_count > 1 ? topology_spread_constraints : {},
                 volumes: volumes
               }.compact,
             },
