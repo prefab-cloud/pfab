@@ -4,6 +4,12 @@ module Pfab
   LABEL_DEPLOY_UNIQUE_ID = "deploy-unique-id"
   module Templates
     class Web < LongRunningProcess
+
+      def get_replica_count
+        raw_replicas = get("replicas")
+        raw_replicas ? raw_replicas.to_i : 1
+      end
+
       def write_to(f)
         if ingres_enabled? && get("host").nil?
           puts "No host to configure ingress for #{@data['deployed_name']}. Skipping deployment. add a host or generateIngressEnabled:false"
@@ -15,9 +21,7 @@ module Pfab
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
           end
           f << StyledYAML.dump(deployment.deep_stringify_keys)
-          raw_replicas = get("replicas")
-          replica_count = raw_replicas ? raw_replicas.to_i : 1
-          if (replica_count > 1)
+          if get_replica_count() > 1
             f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
           end
         end
@@ -296,6 +300,7 @@ module Pfab
         end
         ports = container_ports()
 
+
         {
           kind: "Deployment",
           apiVersion: "apps/v1",
@@ -351,7 +356,7 @@ module Pfab
                     volumeMounts: volume_mounts
                   }.merge(probes()).compact
                 ],
-                topologySpreadConstraints: topology_spread_constraints,
+                topologySpreadConstraints: get_replica_count > 1 ? topology_spread_constraints : {},
                 volumes: volumes
               }.compact,
             },
