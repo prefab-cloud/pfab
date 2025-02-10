@@ -474,9 +474,10 @@ module Pfab
 
     def get_app_name(all: false, include_run_locals: false)
       return $app_name unless $app_name.nil?
-      apps = deployables.keys
-      apps.concat(run_locals.keys) if include_run_locals
+      apps = []
       apps << "all" if all
+      apps.concat(deployables.keys)
+      apps.concat(run_locals.keys) if include_run_locals
       $app_name = choose("which app?", *apps)
     end
 
