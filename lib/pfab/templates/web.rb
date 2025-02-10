@@ -171,21 +171,6 @@ module Pfab
         }
         return pdb
       end
-      ANTI_AFFINITY_TYPES = %w[disabled required preferred]
-      ANTI_AFFINITY_MODE = 'antiAffinityMode'
-      ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'antiAffinityPreferredModeWeight'
-      ZONE_ANTI_AFFINITY_MODE = 'zoneAntiAffinityMode'
-      ZONE_ANTI_AFFINITY_PREFERRED_MODE_WEIGHT = 'zoneAntiAffinityPreferredModeWeight'
-
-
-      def anti_affinity
-        return host_anti_affinity
-      end
-
-
-      def host_anti_affinity
-        anti_affinity_builder(ANTI_AFFINITY_MODE, ANTI_AFFINITY_PREFERRED_MODE_WEIGHT, "kubernetes.io/hostname")
-      end
 
 
       def topology_spread_constraints
@@ -232,40 +217,6 @@ module Pfab
         }
       end
 
-      def anti_affinity_builder(key, weight_key, topology_key)
-        antiAffinityMode = get(key) || "disabled"
-        if antiAffinityMode
-          affinitySelector = {
-            topologyKey: topology_key,
-            labelSelector: labelSelector,
-          }
-
-          return case antiAffinityMode
-                 when "disabled"
-                   puts "antiAffinityMode is set to disabled, skipping"
-                   {}
-                 when "required"
-                   {
-                     podAntiAffinity: {
-                       requiredDuringSchedulingIgnoredDuringExecution: [
-                         affinitySelector
-                       ] } }
-                 when "preferred"
-                   { podAntiAffinity: {
-                     preferredDuringSchedulingIgnoredDuringExecution: [
-                       {
-                         weight: app_vars[weight_key] || 100,
-                         podAffinityTerm: affinitySelector
-                       }
-                     ]
-                   }
-                   }
-                 else
-                   raise "Unexpected value #{antiAffinityMode} specified for `#{key}`. Valid selections are #{ANTI_AFFINITY_TYPES}"
-                 end
-        end
-        return {}
-      end
 
       def deployment
         secret_mounts = get("secretMounts") || []
