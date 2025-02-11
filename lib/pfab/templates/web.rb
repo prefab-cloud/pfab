@@ -307,7 +307,7 @@ module Pfab
                     volumeMounts: volume_mounts
                   }.merge(probes()).compact
                 ],
-                topologySpreadConstraints: get_replica_count > 1 ? topology_spread_constraints : {},
+                topologySpreadConstraints: get_replica_count > 1 ? topology_spread_constraints : [],
                 volumes: volumes
               }.compact,
             },
