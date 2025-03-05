@@ -6,8 +6,10 @@ require 'active_support/core_ext/hash/indifferent_access'
 require 'styled_yaml'
 require 'digest'
 require 'open3'
+require "fileutils"
 
 module Pfab
+  FILES_DIR = ".pfab"
   class CLI
     include Commander::Methods
 
@@ -231,7 +233,7 @@ module Pfab
           deployed_name = deployed_name(app)
           success &= kubectl("delete cronjob -l deployed-name=#{deployed_name}")
         end
-        success &= kubectl("apply -f .application-k8s-#{$env}-#{app_name}.yaml")
+        success &= kubectl("apply -f #{FILES_DIR}/.application-k8s-#{$env}-#{app_name}.yaml")
         success &= puts_and_system("git tag release-#{$env}-#{app_name}-#{Time.now.strftime("%Y-%m-%d-%H-%M-%S")} HEAD")
         success &= puts_and_system("git push origin --tags")
       end

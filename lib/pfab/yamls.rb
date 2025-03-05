@@ -41,11 +41,13 @@ module Pfab
     end
 
     def generate(keys)
+      #ensure the directory exists
+      FileUtils.mkdir_p(FILES_DIR) unless Dir.exist?(FILES_DIR)
       keys.each do |key|
         props = @apps[key]
         data = data_for(key, props)
 
-        filename = ".application-k8s-#{data["env"]}-#{key}.yaml"
+        filename = "#{FILES_DIR}/.application-k8s-#{data["env"]}-#{key}.yaml"
         File.open(filename, "w") do |f|
           case props[:deployable_type]
           when "web" then
