@@ -28,6 +28,7 @@ module Pfab
           },
           spec: {
             schedule: get("schedule"),
+            concurrencyPolicy: get("concurrencyPolicy") || 'Allow',
             successfulJobsHistoryLimit: 1,
             failedJobsHistoryLimit: 1,
             jobTemplate: {
