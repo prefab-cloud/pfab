@@ -21,9 +21,7 @@ module Pfab
             puts "skipping ingress because ingress_disabled = #{@data['generateIngressEnabled']}"
           end
           f << StyledYAML.dump(deployment.deep_stringify_keys)
-          if get_replica_count() > 1
-            f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
-          end
+          f << StyledYAML.dump(pod_disruption_budget.deep_stringify_keys)
         end
       end
 
@@ -151,6 +149,16 @@ module Pfab
       end
 
       def pod_disruption_budget
+        replica_count = get_replica_count()
+        
+        # For single replica deployments, allow the pod to be disrupted
+        # For multi-replica deployments, ensure at least 50% of pods remain available
+        disruption_spec = if replica_count == 1
+          { maxUnavailable: 1 }
+        else
+          { minAvailable: (replica_count * 0.5).floor }
+        end
+        
         pdb = {
           apiVersion: "policy/v1",
           kind: "PodDisruptionBudget",
@@ -158,16 +166,15 @@ module Pfab
             name: "#{@data['deployed_name']}-pdb",
             namespace: get_namespace()
           },
-          spec: {
-            minAvailable: 1,
+          spec: disruption_spec.merge({
             selector: {
-            matchLabels: {
-              application: @data['application'],
-              "deployed-name" => @data['deployed_name'],
-              "application-type" => application_type
+              matchLabels: {
+                application: @data['application'],
+                "deployed-name" => @data['deployed_name'],
+                "application-type" => application_type
               }
             }
-          }
+          })
         }
         return pdb
       end
