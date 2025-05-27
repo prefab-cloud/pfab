@@ -46,7 +46,11 @@ module Pfab
         c.option "--force", "force build and push"
         c.option "--check", "just check if built"
         c.action do |_args, options|
-          cmd_build(force: options.force, checkonly: options.check)
+          if cmd_build(force: options.force, checkonly: options.check)
+            puts "Build succeeded"
+          else
+            raise "Build failed"
+          end
         end
       end
 
