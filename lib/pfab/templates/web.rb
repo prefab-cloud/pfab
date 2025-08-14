@@ -39,10 +39,7 @@ module Pfab
           metadata: {
             name: @data['deployed_name'],
             namespace: get_namespace,
-            labels: {
-              application: @data['application'],
-              "deployed-name" => @data['deployed_name'],
-            },
+            labels: base_labels,
             annotations: service_annotations,
           },
           spec: {
@@ -74,10 +71,7 @@ module Pfab
           metadata: {
             name: "ingress-#{@data['deployed_name']}",
             namespace: get_namespace,
-            labels: {
-              application: @data['application'],
-              "deployed-name" => @data['deployed_name'],
-            },
+            labels: base_labels,
             annotations: ingress_annotations,
           },
           spec: {
@@ -265,16 +259,9 @@ module Pfab
           metadata: {
             name: @data['deployed_name'],
             namespace: get_namespace,
-            labels: {
-              "application" => @data['application'],
-              "deployed-name" => @data['deployed_name'],
-              "application-type" => application_type,
-              "deploy-id" => deploy_id,
+            labels: full_labels.merge({
               LABEL_DEPLOY_UNIQUE_ID => StyledYAML.double_quoted(deploy_unique_id),
-              "tags.datadoghq.com/env" => @data['env'],
-              "tags.datadoghq.com/service" => @data['deployed_name'],
-              "tags.datadoghq.com/version" => StyledYAML.double_quoted(@data['sha'])
-            }
+            })
           },
           spec: {
             replicas: get("replicas") || 1,
@@ -288,15 +275,9 @@ module Pfab
             progressDeadlineSeconds: get("progressDeadlineSeconds") || 600,
             template: {
               metadata: {
-                labels: {
-                  application: @data['application'],
-                  "deployed-name" => @data['deployed_name'],
-                  "application-type" => "web",
+                labels: pod_labels.merge({
                   LABEL_DEPLOY_UNIQUE_ID => StyledYAML.double_quoted(deploy_unique_id),
-                  "tags.datadoghq.com/env": @data['env'],
-                  "tags.datadoghq.com/service": @data['deployed_name'],
-                  "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
-                },
+                }),
               },
               spec: {
                 serviceAccountName: get('serviceAccountName'),

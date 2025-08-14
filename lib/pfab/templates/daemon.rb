@@ -16,15 +16,7 @@ module Pfab
           metadata: {
             name: @data['deployed_name'],
             namespace: get_namespace,
-            labels: {
-              application: @data['application'],
-              "deployed-name" => @data['deployed_name'],
-              "application-type" => application_type,
-              "deploy-id" => deploy_id,
-              "tags.datadoghq.com/env": @data['env'],
-              "tags.datadoghq.com/service": @data['deployed_name'],
-              "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
-            }
+            labels: full_labels
           },
           spec: {
             replicas: get("replicas") || 1,
@@ -37,14 +29,7 @@ module Pfab
             revisionHistoryLimit: 5,
             template: {
               metadata: {
-                labels: {
-                  application: @data['application'],
-                  "deployed-name" => @data['deployed_name'],
-                  "application-type" => "daemon",
-                  "tags.datadoghq.com/env": @data['env'],
-                  "tags.datadoghq.com/service": @data['deployed_name'],
-                  "tags.datadoghq.com/version": StyledYAML.double_quoted(@data['sha'])
-                },
+                labels: pod_labels,
               },
               spec: {
                 serviceAccountName: get('serviceAccountName'),
