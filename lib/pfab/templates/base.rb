@@ -179,11 +179,13 @@ module Pfab
       end
 
       def datadog_labels
-        {
+        labels = {
           "tags.datadoghq.com/env" => @data['env'],
           "tags.datadoghq.com/service" => @data['deployed_name'],
           "tags.datadoghq.com/version" => StyledYAML.double_quoted(@data['sha'])
         }
+        labels["tags.datadoghq.com/family"] = @data['family'] if @data['family']
+        labels
       end
 
       def full_labels
