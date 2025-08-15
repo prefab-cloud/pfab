@@ -163,6 +163,40 @@ module Pfab
 
         return ports
       end
+
+      def base_labels
+        {
+          application: @data['application'],
+          "deployed-name" => @data['deployed_name'],
+        }
+      end
+
+      def metadata_labels
+        base_labels.merge({
+          "application-type" => application_type,
+          "deploy-id" => deploy_id,
+        })
+      end
+
+      def datadog_labels
+        labels = {
+          "tags.datadoghq.com/env" => @data['env'],
+          "tags.datadoghq.com/service" => @data['deployed_name'],
+          "tags.datadoghq.com/version" => StyledYAML.double_quoted(@data['sha'])
+        }
+        labels["tags.datadoghq.com/family"] = @data['family'] if @data['family']
+        labels
+      end
+
+      def full_labels
+        metadata_labels.merge(datadog_labels)
+      end
+
+      def pod_labels
+        base_labels.merge({
+          "application-type" => application_type,
+        }).merge(datadog_labels)
+      end
     end
   end
 end

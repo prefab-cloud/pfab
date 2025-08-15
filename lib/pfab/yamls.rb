@@ -13,6 +13,7 @@ module Pfab
         'container_repository' => config["container.repository"],
         'config' => config,
         'application' => application_yaml["name"],
+        'family' => application_yaml["family"],
         'application_yaml' => application_yaml,
         'namespace' => namespace,
         'application_yaml_hash' => application_yaml_hash
