@@ -39,6 +39,14 @@ module Pfab
       global_option("-a", "--application_name APP_NAME", "run without prompting for app") do |app_name|
         $app_name = app_name
       end
+      $enable_docker_registry_cache = false
+      $disable_docker_registry_cache = false
+      global_option("--enable-docker-registry-cache", "enable docker registry caching with 'cache' label") do
+        $enable_docker_registry_cache = true
+      end
+      global_option("--disable-docker-registry-cache", "disable docker registry caching (overrides auto-detection)") do
+        $disable_docker_registry_cache = true
+      end
 
       command :build do |c|
         c.syntax = "pfab build"
@@ -339,7 +347,14 @@ module Pfab
         end
       end
 
-      build_cmd = "docker buildx build --tag #{image_name} --platform linux/amd64 #{build_args} ."
+      cache_args = ""
+      if should_use_registry_cache?
+        cache_image_name = "#{container_repository}/#{image_name}:cache"
+        cache_args = "--cache-from type=registry,ref=#{cache_image_name} --cache-to type=registry,ref=#{cache_image_name},mode=max"
+        say "Using Docker registry cache: #{cache_image_name}"
+      end
+
+      build_cmd = "docker buildx build --tag #{image_name} --platform linux/amd64 #{build_args} #{cache_args} ."
       puts build_cmd
       result = system(build_cmd)
 
@@ -492,6 +507,28 @@ module Pfab
     def get_apps
       name = get_app_name(all: true)
       (name == "all") ? deployables.keys : [name]
+    end
+
+    def should_use_registry_cache?
+      # Disable flag takes highest precedence
+      return false if $disable_docker_registry_cache
+      
+      # Enable flag takes precedence over auto-detection
+      return true if $enable_docker_registry_cache
+
+      # Auto-detect CI environments where local Docker cache isn't available
+      ci_env_vars = [
+        'CI',           # Generic CI indicator
+        'GITHUB_ACTIONS', # GitHub Actions
+        'GITLAB_CI',    # GitLab CI
+        'CIRCLECI',     # CircleCI
+        'TRAVIS',       # Travis CI
+        'JENKINS_URL',  # Jenkins
+        'BUILD_ID',     # Various CI systems
+        'CONTINUOUS_INTEGRATION' # Generic CI
+      ]
+
+      ci_env_vars.any? { |var| ENV[var] }
     end
   end
 

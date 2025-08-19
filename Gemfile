@@ -3,7 +3,7 @@ source "https://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
-gem "commander"
+gem "commander", "~> 4.6"
 
 gem "activesupport"
 gem "pry-byebug"
