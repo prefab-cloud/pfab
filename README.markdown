@@ -229,7 +229,7 @@ Contributing to pfab
 Local Testing
 -----------------------------------------
 ```bash
-bundle exec rake build
+bundle exec rake clean build
 gem install --local pkg/pfab-0.57.1.gem
 ```
 ```ruby
