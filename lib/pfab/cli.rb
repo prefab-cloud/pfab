@@ -352,6 +352,8 @@ module Pfab
         cache_image_name = "#{container_repository}/#{image_name}:cache"
         cache_args = "--cache-from type=registry,ref=#{cache_image_name} --cache-to type=registry,ref=#{cache_image_name},mode=max"
         say "Using Docker registry cache: #{cache_image_name}"
+      elsif !docker_container_driver_available? && !$disable_docker_registry_cache
+        say "Docker registry caching not available - docker-container driver not found. Set up with: docker buildx create --driver docker-container --use"
       end
 
       build_cmd = "docker buildx build --tag #{image_name} --platform linux/amd64 #{build_args} #{cache_args} ."
@@ -509,10 +511,18 @@ module Pfab
       (name == "all") ? deployables.keys : [name]
     end
 
+    def docker_container_driver_available?
+      output = `docker buildx ls 2>/dev/null`
+      output.lines.any? { |line| line.match(/^\S+\s+docker-container/) }
+    end
+
     def should_use_registry_cache?
       # Disable flag takes highest precedence
       return false if $disable_docker_registry_cache
       
+      # Registry cache requires docker-container driver - this is mandatory
+      return false unless docker_container_driver_available?
+
       # Enable flag takes precedence over auto-detection
       return true if $enable_docker_registry_cache
 
