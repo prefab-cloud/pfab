@@ -23,6 +23,7 @@ Juwelier::Tasks.new do |gem|
   gem.email = "jdwyer@prefab.cloud"
   gem.authors = ["Jeff Dwyer"]
   gem.version = Pfab::Version::STRING
+  gem.required_ruby_version = ">= 3.1"
   # dependencies defined in Gemfile
 end
 Juwelier::RubygemsDotOrgTasks.new

@@ -47,6 +47,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = "http://github.com/prefab-cloud/pfab".freeze
   s.licenses = ["MIT".freeze]
+  s.required_ruby_version = Gem::Requirement.new(">= 3.1".freeze)
   s.rubygems_version = "3.5.22".freeze
   s.summary = "helper gem".freeze
 
