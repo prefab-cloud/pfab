@@ -356,21 +356,34 @@ module Pfab
         say "Docker registry caching not available - docker-container driver not found. Set up with: docker buildx create --driver docker-container --use"
       end
 
-      build_cmd = "docker buildx build --tag #{image_name} --platform linux/amd64 #{build_args} #{cache_args} ."
-      puts build_cmd
-      result = system(build_cmd)
+      if docker_container_driver_available?
+        say "Using docker-container driver - building and pushing directly to avoid local tagging issues"
+        # When using docker-container driver, build and push directly since image won't be in local docker
+        build_cmd = "docker buildx build --tag #{image_name}:#{rev} --tag #{full_image_name} --platform linux/amd64 #{build_args} #{cache_args} --push ."
+        puts build_cmd
+        result = system(build_cmd)
 
-      puts "Build Result #{result}"
-
-      if result
-        puts_and_system "docker tag #{image_name}:latest #{image_name}:#{rev}"
-        puts_and_system "docker tag #{image_name}:#{rev} #{full_image_name}"
-
-        puts_and_system "docker push #{container_repository}/#{image_name}:#{rev}"
-        return true
+        puts "Build Result #{result}"
+        return result
       else
-        say "Build Did Not Succeed"
-        return false
+        say "Using default docker driver - building locally then tagging and pushing"
+        # Traditional build, tag, and push workflow for local docker
+        build_cmd = "docker buildx build --tag #{image_name} --platform linux/amd64 #{build_args} #{cache_args} ."
+        puts build_cmd
+        result = system(build_cmd)
+
+        puts "Build Result #{result}"
+
+        if result
+          puts_and_system "docker tag #{image_name} #{image_name}:#{rev}"
+          puts_and_system "docker tag #{image_name}:#{rev} #{full_image_name}"
+
+          puts_and_system "docker push #{container_repository}/#{image_name}:#{rev}"
+          return true
+        else
+          say "Build Did Not Succeed"
+          return false
+        end
       end
 
     end
