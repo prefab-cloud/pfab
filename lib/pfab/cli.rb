@@ -359,7 +359,8 @@ module Pfab
       if docker_container_driver_available?
         say "Using docker-container driver - building and pushing directly to avoid local tagging issues"
         # When using docker-container driver, build and push directly since image won't be in local docker
-        build_cmd = "docker buildx build --tag #{image_name}:#{rev} --tag #{full_image_name} --platform linux/amd64 #{build_args} #{cache_args} --push ."
+        # Use --output to directly specify registry destination without tags
+        build_cmd = "docker buildx build --output type=registry,name=#{full_image_name} --platform linux/amd64 #{build_args} #{cache_args} ."
         puts build_cmd
         result = system(build_cmd)
 
