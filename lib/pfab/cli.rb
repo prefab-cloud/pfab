@@ -526,8 +526,8 @@ module Pfab
     end
 
     def docker_container_driver_available?
-      output = `docker buildx ls 2>/dev/null`
-      output.lines.any? { |line| line.match(/^\S+\s+docker-container/) }
+      output = `docker buildx inspect 2>/dev/null`
+      output.lines.any? { |line| line.match(/^Driver:\s+docker-container/) }
     end
 
     def should_use_registry_cache?
