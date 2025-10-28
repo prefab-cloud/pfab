@@ -26,9 +26,9 @@ module Pfab
       def get_command()
         cmd = get("command")
         if cmd.kind_of?(Array)
-          return cmd
+          return clean_command_array(cmd)
         end
-        return cmd.split(" ")
+        return clean_command_array(cmd.split(" "))
       end
 
       def cpu(req_type)
@@ -245,11 +245,50 @@ module Pfab
         end
       end
 
+      def build_env_hash_for_expansion
+        # Build hash of all environment variables with same precedence as env_vars
+        env_hash = {}
+
+        # Load in order of precedence (later values override earlier)
+        [
+          @data.dig("application_yaml", :environment),
+          @data.dig("application_yaml", @data["env"], :environment),
+          app_vars[:environment],
+          app_vars.dig(@data["env"], :environment)
+        ].each do |env_vars|
+          next unless env_vars
+          env_vars.each do |key, value|
+            # Skip special field/ and configmap/ references
+            unless value.to_s.start_with?("field/", "configmap/")
+              env_hash[key.to_s] = value.to_s
+            end
+          end
+        end
+
+        env_hash
+      end
+
+      def expand_variables(str)
+        return str unless str.is_a?(String)
+
+        env_hash = build_env_hash_for_expansion
+
+        # Support both $(VAR) and ${VAR} syntax
+        str.gsub(/\$\{([^}]+)\}|\$\(([^)]+)\)/) do
+          var_name = $1 || $2
+          env_hash[var_name] || "$#{$1 ? "{#{var_name}}" : "(#{var_name})"}"
+        end
+      end
+
       def clean_command_array(array)
         return nil unless array
 
         array.map do |item|
-          item.is_a?(String) ? item.strip : item
+          if item.is_a?(String)
+            expand_variables(item.strip)
+          else
+            item
+          end
         end
       end
 
