@@ -249,7 +249,8 @@ module Pfab
         sidecars.map do |sidecar|
           container = {
             name: sidecar["name"],
-            image: sidecar["image"]
+            image: sidecar["image"],
+            restartPolicy: "Always"  # Native sidecar support (K8s 1.28+)
           }
 
           container[:command] = sidecar["command"] if sidecar["command"]

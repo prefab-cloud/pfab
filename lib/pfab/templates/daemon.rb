@@ -33,6 +33,7 @@ module Pfab
               },
               spec: {
                 serviceAccountName: get('serviceAccountName'),
+                initContainers: sidecar_containers.empty? ? nil : sidecar_containers,
                 containers: [
                   {
                     image: image_name,
@@ -43,7 +44,7 @@ module Pfab
                     resources: resources,
                     ports: container_ports()
                   }.merge(probes()).compact
-                ] + sidecar_containers
+                ]
               }.compact,
             },
           }.compact,

@@ -282,6 +282,7 @@ module Pfab
               spec: {
                 serviceAccountName: get('serviceAccountName'),
                 terminationGracePeriodSeconds: get("terminationGracePeriodSeconds") || 30,
+                initContainers: sidecar_containers.empty? ? nil : sidecar_containers,
                 containers: [
                   {
                     image: image_name,
@@ -294,7 +295,7 @@ module Pfab
                     lifecycle: lifecycle,
                     volumeMounts: volume_mounts
                   }.merge(probes()).compact
-                ] + sidecar_containers,
+                ],
                 topologySpreadConstraints: get_replica_count > 1 ? topology_spread_constraints : [],
                 volumes: volumes
               }.compact,

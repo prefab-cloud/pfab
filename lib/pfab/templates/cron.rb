@@ -36,6 +36,7 @@ module Pfab
                   },
                   spec: {
                     serviceAccountName: get('serviceAccountName'),
+                    initContainers: sidecar_containers.empty? ? nil : sidecar_containers,
                     containers: [
                       {
                         image: image_name,
@@ -45,7 +46,7 @@ module Pfab
                         envFrom: env_from,
                         resources: resources,
                       },
-                    ] + sidecar_containers,
+                    ],
                     restartPolicy: "Never",
                   }.compact,
                 },
