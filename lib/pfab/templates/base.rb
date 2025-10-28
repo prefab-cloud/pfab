@@ -245,6 +245,14 @@ module Pfab
         end
       end
 
+      def clean_command_array(array)
+        return nil unless array
+
+        array.map do |item|
+          item.is_a?(String) ? item.strip : item
+        end
+      end
+
       def sidecar_containers
         sidecars.map do |sidecar|
           container = {
@@ -253,8 +261,8 @@ module Pfab
             restartPolicy: "Always"  # Native sidecar support (K8s 1.28+)
           }
 
-          container[:command] = sidecar["command"] if sidecar["command"]
-          container[:args] = sidecar["args"] if sidecar["args"]
+          container[:command] = clean_command_array(sidecar["command"])
+          container[:args] = clean_command_array(sidecar["args"])
           container[:env] = build_sidecar_env(sidecar)
           container[:envFrom] = env_from  # Inherit ConfigMap/Secret references
           container[:resources] = build_sidecar_resources(sidecar)
