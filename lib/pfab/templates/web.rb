@@ -282,6 +282,7 @@ module Pfab
               spec: {
                 serviceAccountName: get('serviceAccountName'),
                 terminationGracePeriodSeconds: get("terminationGracePeriodSeconds") || 30,
+                initContainers: sidecar_containers.empty? ? nil : sidecar_containers,
                 containers: [
                   {
                     image: image_name,
