@@ -43,7 +43,7 @@ module Pfab
                     resources: resources,
                     ports: container_ports()
                   }.merge(probes()).compact
-                ]
+                ] + sidecar_containers
               }.compact,
             },
           }.compact,

@@ -45,7 +45,7 @@ module Pfab
                         envFrom: env_from,
                         resources: resources,
                       },
-                    ],
+                    ] + sidecar_containers,
                     restartPolicy: "Never",
                   }.compact,
                 },

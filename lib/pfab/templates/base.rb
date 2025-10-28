@@ -164,6 +164,108 @@ module Pfab
         return ports
       end
 
+      def sidecars
+        get("sidecars") || []
+      end
+
+      def build_sidecar_resources(sidecar)
+        return nil unless sidecar["resources"]
+
+        resources = {}
+        if sidecar["resources"]["requests"]
+          resources[:requests] = {}
+          resources[:requests][:cpu] = sidecar["resources"]["requests"]["cpu"] if sidecar["resources"]["requests"]["cpu"]
+          resources[:requests][:memory] = sidecar["resources"]["requests"]["memory"] if sidecar["resources"]["requests"]["memory"]
+        end
+        if sidecar["resources"]["limits"]
+          resources[:limits] = {}
+          resources[:limits][:cpu] = sidecar["resources"]["limits"]["cpu"] if sidecar["resources"]["limits"]["cpu"]
+          resources[:limits][:memory] = sidecar["resources"]["limits"]["memory"] if sidecar["resources"]["limits"]["memory"]
+        end
+
+        resources.empty? ? nil : resources
+      end
+
+      def build_sidecar_env(sidecar)
+        # Start with base environment variables that all containers get
+        base_env = env_vars.dup
+
+        # If sidecar has additional env vars, merge them in (allowing overrides)
+        if sidecar["env"]
+          sidecar_env = sidecar["env"].map do |env_var|
+            if env_var.is_a?(Hash)
+              env_var.transform_keys(&:to_sym)
+            elsif env_var.is_a?(String)
+              # Handle simple string format like "KEY=value" or just "KEY"
+              if env_var.include?("=")
+                key, value = env_var.split("=", 2)
+                { name: key, value: value }
+              else
+                { name: env_var }
+              end
+            end
+          end.compact
+
+          # Merge sidecar env vars, allowing them to override base vars
+          env_hash = {}
+          base_env.each { |e| env_hash[e[:name]] = e }
+          sidecar_env.each { |e| env_hash[e[:name]] = e }
+          env_hash.values
+        else
+          base_env
+        end
+      end
+
+      def build_sidecar_ports(sidecar)
+        return nil unless sidecar["ports"]
+
+        sidecar["ports"].map do |port|
+          if port.is_a?(Hash)
+            result = {}
+            result[:name] = port["name"] if port["name"]
+            result[:containerPort] = port["containerPort"] if port["containerPort"]
+            result[:protocol] = port["protocol"] if port["protocol"]
+            result
+          elsif port.is_a?(Integer)
+            { containerPort: port }
+          end
+        end.compact
+      end
+
+      def build_sidecar_volume_mounts(sidecar)
+        return nil unless sidecar["volumeMounts"]
+
+        sidecar["volumeMounts"].map do |mount|
+          result = {}
+          result[:name] = mount["name"] if mount["name"]
+          result[:mountPath] = mount["mountPath"] if mount["mountPath"]
+          result[:readOnly] = mount["readOnly"] if mount.key?("readOnly")
+          result[:subPath] = mount["subPath"] if mount["subPath"]
+          result
+        end
+      end
+
+      def sidecar_containers
+        sidecars.map do |sidecar|
+          container = {
+            name: sidecar["name"],
+            image: sidecar["image"]
+          }
+
+          container[:command] = sidecar["command"] if sidecar["command"]
+          container[:args] = sidecar["args"] if sidecar["args"]
+          container[:env] = build_sidecar_env(sidecar)
+          container[:envFrom] = env_from  # Inherit ConfigMap/Secret references
+          container[:resources] = build_sidecar_resources(sidecar)
+          container[:ports] = build_sidecar_ports(sidecar)
+          container[:volumeMounts] = build_sidecar_volume_mounts(sidecar)
+          container[:imagePullPolicy] = sidecar["imagePullPolicy"] if sidecar["imagePullPolicy"]
+          container[:securityContext] = sidecar["securityContext"].transform_keys(&:to_sym) if sidecar["securityContext"]
+
+          container.compact
+        end
+      end
+
       def base_labels
         {
           application: @data['application'],

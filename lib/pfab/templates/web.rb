@@ -294,7 +294,7 @@ module Pfab
                     lifecycle: lifecycle,
                     volumeMounts: volume_mounts
                   }.merge(probes()).compact
-                ],
+                ] + sidecar_containers,
                 topologySpreadConstraints: get_replica_count > 1 ? topology_spread_constraints : [],
                 volumes: volumes
               }.compact,
