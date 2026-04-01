@@ -146,11 +146,11 @@ module Pfab
         replica_count = get_replica_count()
         
         # For single replica deployments, allow the pod to be disrupted
-        # For multi-replica deployments, ensure at least 50% of pods remain available
+        # For multi-replica deployments, allow up to 2 pods to be disrupted. (more can lead to autoscaling issues)
         disruption_spec = if replica_count == 1
           { maxUnavailable: 1 }
         else
-          { minAvailable: (replica_count * 0.5).floor }
+          { maxUnavailable: 2 }
         end
         
         pdb = {
